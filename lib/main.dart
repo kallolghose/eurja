@@ -46,6 +46,7 @@ class _LoginPageState extends State<LoginPage>{
   final passwordController = TextEditingController();
 
   String _phoneNoError = null, _passwordError = null;
+  String countryCode = "+91";
 
   void performLogin(){
     setState(() {
@@ -65,41 +66,92 @@ class _LoginPageState extends State<LoginPage>{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
+      resizeToAvoidBottomInset:false,
       body: Container(
         child: Column(
           mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.center,
+
           children: <Widget>[
             Padding(
-              padding: EdgeInsets.all(4.0),
+              padding: EdgeInsets.only(left: 4.0, right: 4.0),
               child: Container(
+                height: 65,
                 child: Row(
                   mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     Expanded(
-                      child: TextFormField(
-                        decoration: InputDecoration(labelText: "Phone Number"),
+                      child: Container(
+                        height:65,
+                        child: DropdownButton<String>(
+                          value: countryCode,
+                          icon: Icon(Icons.arrow_drop_down),
+                          iconSize: 24,
+                          elevation: 30,
+                          style: TextStyle(color: Colors.deepPurple),
+                          underline: Container(
+                            height: 0,
+                          ),
+                          onChanged: (String newValue) {
+                            countryCode = newValue;
+                            setState(() {
+                            });
+                          },
+                          items: <String>['+1', '+10', '+91', '+89']
+                              .map<DropdownMenuItem<String>>((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            );
+                          }).toList(),
+                        )
                       ),
+                    ),
+                    Expanded(
+                      child: Container(
+                        height: 65,
+                        child: TextFormField(
+                          decoration: InputDecoration(
+                              hintText: "Phone Number",
+                              errorText: _phoneNoError),
+                          controller: phoneNoController,
+                          keyboardType: TextInputType.number,
+                          onChanged: (value){
+                            if(value.length!=0 && value.length!=10){
+                              _phoneNoError = "Phone number not proper";
+                            }
+                            else{
+                              _phoneNoError = null;
+                            }
+                            setState(() {
+
+                            });
+                          },
+                        ),
+                      ),
+                      flex : 6
                     )
                   ],
                 ),
               ),
             ),
-            Padding(padding: EdgeInsets.all(4.0),
-              child: TextFormField(decoration: InputDecoration(labelText:'Password',
-                  hintText: 'Password',
-                  errorText: _passwordError
+            Padding(padding: EdgeInsets.only(left: 4.0, right: 4.0),
+              child: Container(
+                height: 65,
+                child: TextFormField(decoration: InputDecoration(
+                    hintText: 'Password',
+                    errorText: _passwordError
                 ),
-                obscureText: true,
-                controller: passwordController,
+                  obscureText: true,
+                  controller: passwordController,
+                ),
               ),
             ),
-            Padding(padding: EdgeInsets.all(4.0),
+            Padding(padding: EdgeInsets.only(left: 4.0, right: 4.0),
               child: SizedBox(
                 width: double.infinity,
-                height: 40.0,
+                height: 45.0,
                 child: FlatButton(
                     color: Colors.blue,
                     textColor: Colors.white,

@@ -1,174 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:eurja/views/googlemap.dart';
+import 'services/navigation_service.dart';
+import 'constants/routes_path.dart' as routes;
+
+import 'locator.dart';
 
 void main() {
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'eUrja',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
         primarySwatch: Colors.blue,
-        // This makes the visual density adapt to the platform that you run
-        // the app on. For desktop platforms, the controls will be smaller and
-        // closer together (more dense) than on mobile platforms.
-
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: LoginPage(title: 'Flutter Demo Home Page'),
+      navigatorKey: locator<NavigationService>().navigatorKey,
+      initialRoute: routes.HomeRoute,
+      home: MapSample(),
     );
   }
 }
 
-class LoginPage extends StatefulWidget{
-  LoginPage({Key key, this.title}) : super(key: key);
-  final String title;
 
-  @override
-  _LoginPageState createState() => _LoginPageState();
-  
-}
-class _LoginPageState extends State<LoginPage>{
-
-  final phoneNoController = TextEditingController();
-  final passwordController = TextEditingController();
-
-  String _phoneNoError = null, _passwordError = null;
-  String countryCode = "+91";
-
-  void performLogin(){
-    setState(() {
-      if(phoneNoController.text.length != 10){
-        _phoneNoError = "Enter Valid Phone Number";
-      }
-    });
-  }
-
-  @override
-  void dispose(){
-    phoneNoController.dispose();
-    passwordController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset:false,
-      body: Container(
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.center,
-
-          children: <Widget>[
-            Padding(
-              padding: EdgeInsets.only(left: 4.0, right: 4.0),
-              child: Container(
-                height: 65,
-                child: Row(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Expanded(
-                      child: Container(
-                        height:65,
-                        child: DropdownButton<String>(
-                          value: countryCode,
-                          icon: Icon(Icons.arrow_drop_down),
-                          iconSize: 24,
-                          elevation: 30,
-                          style: TextStyle(color: Colors.deepPurple),
-                          underline: Container(
-                            height: 0,
-                          ),
-                          onChanged: (String newValue) {
-                            countryCode = newValue;
-                            setState(() {
-                            });
-                          },
-                          items: <String>['+1', '+10', '+91', '+89']
-                              .map<DropdownMenuItem<String>>((String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(value),
-                            );
-                          }).toList(),
-                        )
-                      ),
-                    ),
-                    Expanded(
-                      child: Container(
-                        height: 65,
-                        child: TextFormField(
-                          decoration: InputDecoration(
-                              hintText: "Phone Number",
-                              errorText: _phoneNoError),
-                          controller: phoneNoController,
-                          keyboardType: TextInputType.number,
-                          onChanged: (value){
-                            if(value.length!=0 && value.length!=10){
-                              _phoneNoError = "Phone number not proper";
-                            }
-                            else{
-                              _phoneNoError = null;
-                            }
-                            setState(() {
-
-                            });
-                          },
-                        ),
-                      ),
-                      flex : 6
-                    )
-                  ],
-                ),
-              ),
-            ),
-            Padding(padding: EdgeInsets.only(left: 4.0, right: 4.0),
-              child: Container(
-                height: 65,
-                child: TextFormField(decoration: InputDecoration(
-                    hintText: 'Password',
-                    errorText: _passwordError
-                ),
-                  obscureText: true,
-                  controller: passwordController,
-                ),
-              ),
-            ),
-            Padding(padding: EdgeInsets.only(left: 4.0, right: 4.0),
-              child: SizedBox(
-                width: double.infinity,
-                height: 45.0,
-                child: FlatButton(
-                    color: Colors.blue,
-                    textColor: Colors.white,
-                    onPressed: performLogin,
-                    child: Text("LOGIN", style: TextStyle(fontSize: 14.0)),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(4.0)
-                    ),
-                  ),
-                )
-              )
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);

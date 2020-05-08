@@ -1,11 +1,12 @@
 import 'dart:convert';
+import 'package:eurja/models/apiresponse.dart';
 
-LoginResponse postFromJson(String str) {
+LoginResponse fromJson(String str) {
   final jsonData = json.decode(str);
   return LoginResponse.fromJson(jsonData);
 }
 
-String postToJson(LoginRequest data) {
+String toJson(LoginRequest data) {
   final dyn = data.toJson();
   return json.encode(dyn);
 }
@@ -27,8 +28,34 @@ class LoginRequest{
   };
 }
 
-class LoginResponse{
+class LoginResponse extends APIResponse{
 
+  LoginData data;
+
+  LoginResponse({bool status, String message, List<String> error, this.data}) : super(status:status, message:message, error:error);
+
+  factory LoginResponse.fromJson(Map<String, dynamic> json) => new LoginResponse(
+
+    status: json['status'],
+    message: json['message'],
+    error: (json['error'] as List<dynamic>).cast<String>(),
+    data: json["data"] !=null ?  LoginData(
+        firstName: json["data"]["firstName"],
+        lastName: json["data"]["lastName"],
+        userId: json["data"]["userid"],
+        emailId: json["data"]["emailId"],
+        isdCode: json["data"]["isdCode"],
+        phoneNo: json["data"]["phoneNo"],
+        token: Token(
+          status: json["data"]["token"]["status"],
+          authentication: json["data"]["token"]["authentication"],
+          token: json["data"]["token"]["token"],
+        )
+    ):null,
+  );
+}
+
+class LoginData{
   String firstName;
   String lastName;
   String userId;
@@ -37,21 +64,7 @@ class LoginResponse{
   int phoneNo;
   Token token;
 
-  LoginResponse({this.firstName, this.lastName, this.userId, this.emailId, this.isdCode, this.phoneNo, this.token});
-
-  factory LoginResponse.fromJson(Map<String, dynamic> json) => new LoginResponse(
-    firstName: json["firstName"],
-    lastName: json["lastName"],
-    userId: json["userid"],
-    emailId: json["emailId"],
-    isdCode: json["isdCode"],
-    phoneNo: json["phoneNo"],
-    token: Token(
-      status: json["token"]["status"],
-      authentication: json["token"]["authentication"],
-      token: json["token"]["token"],
-    )
-  );
+  LoginData({this.firstName, this.lastName, this.userId, this.emailId, this.isdCode, this.phoneNo, this.token});
 }
 
 class Token{

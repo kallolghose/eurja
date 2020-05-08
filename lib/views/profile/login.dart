@@ -50,6 +50,9 @@ class _LoginPageState extends State<LoginPage> implements loginService.LoginCall
 
   @override
   void onLoginFailure(String message) {
+    setState(() {
+      _isLoggingIn = false;
+    });
     _appUtilities.showSnackBar(this.context, message, app_constants.ERROR);
   }
 
@@ -77,7 +80,7 @@ class _LoginPageState extends State<LoginPage> implements loginService.LoginCall
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset:false,
+      resizeToAvoidBottomInset: false,
       body: Container(
         child: Column(
           mainAxisSize: MainAxisSize.max,

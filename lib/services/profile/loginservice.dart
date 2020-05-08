@@ -2,7 +2,7 @@ import 'package:http/http.dart' as http;
 import 'package:eurja/models/profile/loginmodels.dart' as login;
 import 'package:eurja/constants/app_constants.dart' as app_constants;
 
-const url = app_constants.API_URL + "";
+const url = app_constants.API_URL + "/users/login";
 
 abstract class LoginCallBack{
   void onLoginSuccess(login.LoginResponse loginResponse);
@@ -16,24 +16,27 @@ class LoginApi{
   performLogin(login.LoginRequest loginRequest){
     validateLogin(loginRequest).then((value) => {
       _callBack.onLoginSuccess(value)
-    }).catchError((Exception error) => {
-      _callBack.onLoginFailure(error.toString())
+    }).catchError((error, stackTrace) {
+      _callBack.onLoginFailure(error);
     });
   }
 
   Future<login.LoginResponse> validateLogin(login.LoginRequest loginRequest) async {
-    final response = await http.post('$url',
+    final response = await http.post('$url' + '/validate',
         headers: {
-          'Content-type': 'application/json'
+          'content-type': 'application/json'
         },
-        body: login.postToJson(loginRequest)
+        body: login.toJson(loginRequest)
     );
+    login.LoginResponse loginResponse = login.fromJson(response.body);
     if(response.statusCode == 200)
-      return login.postFromJson(response.body);
+      return loginResponse;
     else if(response.statusCode == 404)
-      throw Exception("User Not Found !!");
+      throw (loginResponse.message);
+    else if(response.statusCode == 401)
+      throw (loginResponse.error[0]);
     else
-      throw Exception("Some error occured !!");
+      throw ("Some error occured !!");
   }
 
 }

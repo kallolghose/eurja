@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:eurja/constants/app_constants.dart' as constants;
+
 class MyAppBar extends AppBar{
   MyAppBar({Key key, this.myTitle, this.context}) : super(key:key,
      centerTitle: true,
@@ -13,4 +15,25 @@ class MyAppBar extends AppBar{
   );
   final String myTitle;
   final BuildContext context;
+}
+
+
+class AppUtilities{
+
+  void showSnackBar(BuildContext context, String message, String messageType){
+    var color = Colors.green;
+    if(messageType == constants.ERROR){
+      color = Colors.red;
+    }
+    final snackBar = SnackBar(
+      content: Text(message,
+        style: TextStyle(
+          color: Colors.white,
+        ),
+      ),
+      backgroundColor: color,
+    );
+    Scaffold.of(context).showSnackBar(snackBar);
+  }
+
 }

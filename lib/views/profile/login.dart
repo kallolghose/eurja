@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'bottomnavigation.dart';
-import 'package:eurja/views/signup.dart';
 import 'package:eurja/constants/routes_path.dart' as routes;
 import 'package:eurja/services/navigation_service.dart';
 import 'package:eurja/locator.dart';
+import 'package:eurja/models/profile/loginmodels.dart';
+import 'package:eurja/services/profile/loginservice.dart' as loginService;
+import 'package:eurja/utilities/mycomponents.dart';
+import 'package:eurja/constants/app_constants.dart' as app_constants;
 
 class LoginPage extends StatefulWidget{
   LoginPage({Key key, this.title}) : super(key: key);
@@ -13,22 +15,56 @@ class LoginPage extends StatefulWidget{
   _LoginPageState createState() => _LoginPageState();
 
 }
-class _LoginPageState extends State<LoginPage>{
+class _LoginPageState extends State<LoginPage> implements loginService.LoginCallBack{
 
   final NavigationService _navigationService = locator<NavigationService>();
+  final AppUtilities _appUtilities = AppUtilities();
 
   final phoneNoController = TextEditingController();
   final passwordController = TextEditingController();
 
   String _phoneNoError, _passwordError;
   String countryCode = "+91";
+  bool _isLoggingIn = false;
+  loginService.LoginApi loginApi;
+
 
   void performLogin(){
-    setState(() {
-      if(phoneNoController.text.length != 10){
+    if(phoneNoController.text.length != 10) {
+      setState(() {
         _phoneNoError = "Enter Valid Phone Number";
-      }
+      });
+    }
+    else{
+      //Create the login request model and hit the API
+      setState(() {
+        _isLoggingIn = true;
+      });
+      loginApi.performLogin(LoginRequest(
+        isdCode: countryCode,
+        phoneNo: int.parse(phoneNoController.text),
+        password: passwordController.text
+      ));
+    }
+  }
+
+  @override
+  void onLoginFailure(String message) {
+    _appUtilities.showSnackBar(this.context, message, app_constants.ERROR);
+  }
+
+  @override
+  void onLoginSuccess(LoginResponse loginResponse) {
+    setState(() {
+      _isLoggingIn = false;
     });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    loginApi = new loginService.LoginApi(this);
   }
 
   @override
@@ -63,7 +99,7 @@ class _LoginPageState extends State<LoginPage>{
                             value: countryCode,
                             icon: Icon(Icons.arrow_drop_down),
                             iconSize: 24,
-                            elevation: 30,
+                            elevation: 16,
                             underline: Container(
                               height: 0,
                               color: Colors.black26,
@@ -130,11 +166,11 @@ class _LoginPageState extends State<LoginPage>{
                 child: SizedBox(
                   width: double.infinity,
                   height: 45.0,
-                  child: FlatButton(
+                  child: MaterialButton(
                     color: Colors.blue,
                     textColor: Colors.white,
                     onPressed: performLogin,
-                    child: Text("LOGIN", style: TextStyle(fontSize: 14.0)),
+                    child: setUpLoaderButton(),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(4.0)
                     ),
@@ -165,5 +201,16 @@ class _LoginPageState extends State<LoginPage>{
       ),
       //bottomNavigationBar: MyBottomNavigation(currentIndex: 3,),
     );
+  }
+
+  Widget setUpLoaderButton(){
+    if(!_isLoggingIn){
+      return Text("LOGIN", style: TextStyle(fontSize: 14.0));
+    }
+    else{
+      return CircularProgressIndicator(
+        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+      );
+    }
   }
 }

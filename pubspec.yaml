@@ -32,6 +32,8 @@ dependencies:
   get_it:
   provider:
   geolocator: ^5.3.1
+  http: ^0.12.1
+  json_annotation: ^3.0.1
 
 dev_dependencies:
   flutter_test:

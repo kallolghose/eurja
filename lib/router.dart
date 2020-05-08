@@ -1,9 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:eurja/constants/routes_path.dart' as routes;
-import 'package:eurja/views/login.dart';
-import 'package:eurja/views/signup.dart';
-import 'package:eurja/views/googlemap.dart';
+import 'package:eurja/views/profile/login.dart';
+import 'package:eurja/views/profile/signup.dart';
+import 'package:eurja/views/map/googlemap.dart';
 
 Route<dynamic> generateRoute(RouteSettings settings) {
   switch (settings.name) {

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:eurja/views/bottomnavigation.dart';
-import 'package:eurja/mycomponents.dart';
+import 'package:eurja/utilities/mycomponents.dart';
 
 class SignUpPage extends StatefulWidget{
   SignUpPage({Key key}) : super(key:key);
@@ -47,7 +46,7 @@ class _SignUpPage extends State<SignUpPage>{
                               value: countryCode,
                               icon: Icon(Icons.arrow_drop_down),
                               iconSize: 24,
-                              elevation: 30,
+                              elevation: 16,
                               underline: Container(
                                 height: 0,
                                 color: Colors.blue,

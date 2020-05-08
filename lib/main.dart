@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:eurja/services/navigation_service.dart';
-import 'package:eurja/constants/routes_path.dart' as routes;
-import 'package:eurja/router.dart' as router;
 import 'package:eurja/locator.dart';
 import 'package:eurja/views/eurjaapp.dart';
 

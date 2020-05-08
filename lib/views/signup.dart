@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'bottomnavigation.dart';
-import '../mycomponents.dart';
+import 'package:eurja/views/bottomnavigation.dart';
+import 'package:eurja/mycomponents.dart';
 
 class SignUpPage extends StatefulWidget{
   SignUpPage({Key key}) : super(key:key);
@@ -49,7 +49,7 @@ class _SignUpPage extends State<SignUpPage>{
                               iconSize: 24,
                               elevation: 30,
                               underline: Container(
-                                height: 1,
+                                height: 0,
                                 color: Colors.blue,
                               ),
                               onChanged: (String newValue) {
@@ -181,7 +181,7 @@ class _SignUpPage extends State<SignUpPage>{
           ),
         )
       ),
-      bottomNavigationBar: MyBottomNavigation(currentIndex: 3),
+      //bottomNavigationBar: MyBottomNavigation(currentIndex: 3),
     );
   }
 }

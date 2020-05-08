@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'bottomnavigation.dart';
-import 'signup.dart';
-import '../constants/routes_path.dart' as routes;
-import '../services/navigation_service.dart';
-import '../locator.dart';
+import 'package:eurja/views/signup.dart';
+import 'package:eurja/constants/routes_path.dart' as routes;
+import 'package:eurja/services/navigation_service.dart';
+import 'package:eurja/locator.dart';
 
 class LoginPage extends StatefulWidget{
   LoginPage({Key key, this.title}) : super(key: key);
@@ -65,8 +65,8 @@ class _LoginPageState extends State<LoginPage>{
                             iconSize: 24,
                             elevation: 30,
                             underline: Container(
-                              height: 1,
-                              color: Colors.blue,
+                              height: 0,
+                              color: Colors.black26,
                             ),
                             onChanged: (String newValue) {
                               countryCode = newValue;
@@ -88,6 +88,8 @@ class _LoginPageState extends State<LoginPage>{
                           height: 65,
                           child: TextFormField(
                             decoration: InputDecoration(
+                                suffixIcon: Icon(Icons.phone,
+                                  color: Colors.blue,),
                                 hintText: "Phone Number",
                                 errorText: _phoneNoError),
                             controller: phoneNoController,
@@ -117,7 +119,8 @@ class _LoginPageState extends State<LoginPage>{
                 child: TextFormField(decoration: InputDecoration(
                     hintText: 'Password',
                     errorText: _passwordError,
-                ),
+                    suffixIcon: Icon(Icons.remove_red_eye,
+                      color: Colors.blue,)                ),
                   obscureText: true,
                   controller: passwordController,
                 ),
@@ -160,9 +163,7 @@ class _LoginPageState extends State<LoginPage>{
           ],
         ),
       ),
-      bottomNavigationBar: MyBottomNavigation(
-        currentIndex: 3,
-      ),
+      //bottomNavigationBar: MyBottomNavigation(currentIndex: 3,),
     );
   }
 }

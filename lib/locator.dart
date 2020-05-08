@@ -1,5 +1,5 @@
 import 'package:get_it/get_it.dart';
-import 'services/navigation_service.dart';
+import 'package:eurja/services/navigation_service.dart';
 
 GetIt locator = GetIt.instance;
 

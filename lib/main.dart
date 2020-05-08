@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:eurja/views/googlemap.dart';
-import 'services/navigation_service.dart';
-import 'constants/routes_path.dart' as routes;
-
-import 'locator.dart';
+import 'package:eurja/services/navigation_service.dart';
+import 'package:eurja/constants/routes_path.dart' as routes;
+import 'package:eurja/router.dart' as router;
+import 'package:eurja/locator.dart';
+import 'package:eurja/views/eurjaapp.dart';
 
 void main() {
+  setUpLocator();
   runApp(MyApp());
 }
 
@@ -20,9 +21,10 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      navigatorKey: locator<NavigationService>().navigatorKey,
-      initialRoute: routes.HomeRoute,
-      home: MapSample(),
+      //navigatorKey: locator<NavigationService>().navigatorKey,
+      //onGenerateRoute: router.generateRoute,
+      //initialRoute: routes.HomeRoute,
+      home: EUrjaApp(),
     );
   }
 }

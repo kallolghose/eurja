@@ -12,16 +12,24 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'eUrja',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      //navigatorKey: locator<NavigationService>().navigatorKey,
-      //onGenerateRoute: router.generateRoute,
-      //initialRoute: routes.HomeRoute,
-      home: EUrjaApp(),
+    return GestureDetector(
+      onTap: () {
+        FocusScopeNode currentFocus = FocusScope.of(context);
+        if (!currentFocus.hasPrimaryFocus) {
+          currentFocus.unfocus();
+        }
+      },
+      child: MaterialApp(
+        title: 'eUrja',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+        ),
+        //navigatorKey: locator<NavigationService>().navigatorKey,
+        //onGenerateRoute: router.generateRoute,
+        //initialRoute: routes.HomeRoute,
+        home: EUrjaApp(),
+      )
     );
   }
 }

@@ -25,6 +25,7 @@ class _EUrjaApp extends State<EUrjaApp>{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: WillPopScope(
           child: Navigator(
             key: locator<NavigationService>().navigatorKey,

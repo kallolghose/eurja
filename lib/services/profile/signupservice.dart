@@ -9,6 +9,43 @@ abstract class SignUpCallBack{
   void onSignUpFailure(String message);
 }
 
+abstract class OTPCallBack{
+  void onOTPSuccess(OTPResponse otpResponse);
+  void onOTPFailure(String message);
+}
+
+class OTPApi{
+  OTPCallBack _otpCallBack;
+  OTPApi(this._otpCallBack);
+
+  validateOTP(OTPRequest otpRequest){
+    callOTPApi(otpRequest).then((value) => {
+      _otpCallBack.onOTPSuccess(value)
+    }).catchError((error, stackTrace){
+      _otpCallBack.onOTPFailure(error);
+    });
+  }
+
+  Future<OTPResponse> callOTPApi(OTPRequest otpRequest) async {
+    final response = await http.post('$url' + '/validateotp',
+        headers: {
+          'content-type': 'application/json'
+        },
+        body: otpToJson(otpRequest)
+    );
+    OTPResponse otpResponse = otpFromJson(response.body);
+    if(response.statusCode == 200)
+      return otpResponse;
+    else if(response.statusCode == 404)
+      throw (otpResponse.message);
+    else if(response.statusCode == 409)
+      throw (otpResponse.error[0]);
+    else
+      throw ("Some error occured !!");
+  }
+
+}
+
 class SignUpApi{
   SignUpCallBack _signUpCallBack;
   SignUpApi(this._signUpCallBack);
@@ -22,7 +59,7 @@ class SignUpApi{
   }
 
   Future<SignUpResponse> signUp(SignUpRequest signUpRequest) async {
-    final response = await http.post('$url' + '/validate',
+    final response = await http.post('$url' + '/create',
         headers: {
           'content-type': 'application/json'
         },

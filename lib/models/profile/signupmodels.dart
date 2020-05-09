@@ -11,6 +11,16 @@ String toJson(SignUpRequest data) {
   return json.encode(dyn);
 }
 
+OTPResponse otpFromJson(String str){
+  final jsonData = json.decode(str);
+  return OTPResponse.fromJson(jsonData);
+}
+
+String otpToJson(OTPRequest data) {
+  final dyn = data.toJson();
+  return json.encode(dyn);
+}
+
 class SignUpRequest{
 
   String emailId;
@@ -60,3 +70,68 @@ class SignUpData{
   SignUpData({this.userId, this.emailId, this.phoneNo, this.isdCode, this.status, this.active});
 
 }
+
+
+class OTPRequest{
+
+  OTPRequest({this.isdCode, this.phoneNo, this.otp});
+
+  String isdCode;
+  int phoneNo;
+  int otp;
+
+  Map<String, dynamic> toJson() => {
+    "isdCode":isdCode,
+    "phoneNo":phoneNo,
+    "otp":otp
+  };
+}
+
+class OTPResponse extends APIResponse {
+
+  OTPData data;
+  OTPResponse({bool status, String message, List<String> error, this.data}) : super(status:status, message:message, error:error);
+
+  factory OTPResponse.fromJson(Map<String, dynamic> json) => new OTPResponse(
+    status: json['status'],
+    message: json['message'],
+    error: (json['error'] as List<dynamic>).cast<String>(),
+    data: json["data"] !=null ?  OTPData(
+        userId: json["data"]["userId"],
+        emailId: json["data"]["emailId"],
+        isdCode: json["data"]["isdCode"],
+        phoneNo: json["data"]["phoneNo"],
+        message: json["data"]["message"],
+        token: Token(
+          status: json["data"]["token"]["status"],
+          authentication: json["data"]["token"]["authentication"],
+          token: json["data"]["token"]["token"],
+        )
+    ):null,
+  );
+
+}
+
+class OTPData {
+
+  String userId;
+  String emailId;
+  String isdCode;
+  int phoneNo;
+  String message;
+  Token token;
+
+  OTPData({this.userId, this.emailId, this.isdCode, this.phoneNo, this.message, this.token});
+}
+
+class Token{
+
+  bool status;
+  String authentication;
+  String token;
+
+  Token({this.status, this.authentication, this.token});
+
+}
+
+

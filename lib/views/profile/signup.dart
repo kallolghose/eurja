@@ -12,7 +12,7 @@ class SignUpPage extends StatefulWidget{
 
 }
 
-class _SignUpPage extends State<SignUpPage> implements SignUpCallBack {
+class _SignUpPage extends State<SignUpPage> implements SignUpCallBack, OTPCallBack {
 
   final fullNameController = TextEditingController();
   final emailController = TextEditingController();
@@ -21,11 +21,13 @@ class _SignUpPage extends State<SignUpPage> implements SignUpCallBack {
   final AppUtilities appUtilities = AppUtilities();
 
   SignUpApi signUpApi;
-  bool _isSigningIn = false;
+  OTPApi otpApi;
+  bool _isSigningIn = false, _isOTPValidation = false;
   String fullNameError, emailError, passwordError, phoneNoError, countryCode = "+91";
 
   void performSignUp(){
-    /*if(isValidated()){
+    FocusScope.of(context).requestFocus(new FocusNode());
+    if(isValidated()){
       setState(() {
         _isSigningIn = true;
       });
@@ -35,8 +37,7 @@ class _SignUpPage extends State<SignUpPage> implements SignUpCallBack {
         phoneNo: int.parse(phoneNoController.text),
         password: passwordController.text
       ));
-    }*/
-    showOTPDialog();
+    }
   }
 
   @override
@@ -52,12 +53,31 @@ class _SignUpPage extends State<SignUpPage> implements SignUpCallBack {
     setState(() {
       _isSigningIn = false;
     });
+    showOTPDialog();
   }
+
+
+  @override
+  void onOTPSuccess(OTPResponse otpResponse) {
+    setState(() {
+      _isOTPValidation = false;
+    });
+  }
+
+  @override
+  void onOTPFailure(String message) {
+    setState(() {
+      _isOTPValidation = false;
+    });
+    appUtilities.showSnackBar(context, message, app_constants.ERROR);
+  }
+
 
   @override
   void initState() {
     super.initState();
     signUpApi = SignUpApi(this);
+    otpApi = OTPApi(this);
   }
 
   @override
@@ -225,6 +245,21 @@ class _SignUpPage extends State<SignUpPage> implements SignUpCallBack {
   Widget setUpLoaderButton(){
     if(!_isSigningIn){
       return Text("SIGN UP", style: TextStyle(fontSize: 14.0));
+    }
+    else{
+      return SizedBox(
+          width: 20.0,
+          height: 20.0,
+          child : CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+          )
+      );
+    }
+  }
+
+  Widget setUpOTPLoaderButton(){
+    if(!_isOTPValidation){
+      return Text("Submit", style: TextStyle(fontSize: 14.0));
     }
     else{
       return SizedBox(
@@ -456,10 +491,10 @@ class _SignUpPage extends State<SignUpPage> implements SignUpCallBack {
                       child: Padding(
                         padding: EdgeInsets.only(left: 10.0, right: 10.0, top:15.0, bottom: 10.0),
                         child: MaterialButton(
-                          onPressed: (){},
+                          onPressed: validateOTP,
                           color: Colors.blue,
                           textColor: Colors.white,
-                          child: Text("Submit"),
+                          child: setUpOTPLoaderButton(),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(4.0)
                           )
@@ -502,8 +537,12 @@ class _SignUpPage extends State<SignUpPage> implements SignUpCallBack {
     );
   }
 
-  _fieldFocusChange(BuildContext context, FocusNode currentFocus,FocusNode nextFocus) {
+  void _fieldFocusChange(BuildContext context, FocusNode currentFocus,FocusNode nextFocus) {
     currentFocus.unfocus();
     FocusScope.of(context).requestFocus(nextFocus);
+  }
+
+  void validateOTP(){
+
   }
 }

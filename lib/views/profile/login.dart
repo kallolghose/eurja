@@ -30,6 +30,7 @@ class _LoginPageState extends State<LoginPage> implements loginService.LoginCall
 
 
   void performLogin(){
+    FocusScope.of(context).requestFocus(new FocusNode());
     if(phoneNoController.text.length != 10) {
       setState(() {
         _phoneNoError = "Enter Valid Phone Number";
@@ -211,9 +212,13 @@ class _LoginPageState extends State<LoginPage> implements loginService.LoginCall
       return Text("LOGIN", style: TextStyle(fontSize: 14.0));
     }
     else{
-      return CircularProgressIndicator(
-        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-      );
+      return SizedBox(
+          width: 20.0,
+          height: 20.0,
+          child : CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+          )
+        );
     }
   }
 }

@@ -3,6 +3,9 @@ import 'package:eurja/utilities/mycomponents.dart';
 import 'package:eurja/services/profile/signupservice.dart';
 import 'package:eurja/models/profile/signupmodels.dart';
 import 'package:eurja/constants/app_constants.dart' as app_constants;
+import 'package:eurja/constants/routes_path.dart' as routes;
+import 'package:eurja/services/navigation_service.dart';
+import 'package:eurja/locator.dart';
 
 class SignUpPage extends StatefulWidget{
   SignUpPage({Key key}) : super(key:key);
@@ -12,7 +15,7 @@ class SignUpPage extends StatefulWidget{
 
 }
 
-class _SignUpPage extends State<SignUpPage> implements SignUpCallBack, OTPCallBack {
+class _SignUpPage extends State<SignUpPage> implements SignUpCallBack {
 
   final fullNameController = TextEditingController();
   final emailController = TextEditingController();
@@ -21,22 +24,25 @@ class _SignUpPage extends State<SignUpPage> implements SignUpCallBack, OTPCallBa
   final AppUtilities appUtilities = AppUtilities();
 
   SignUpApi signUpApi;
-  OTPApi otpApi;
-  bool _isSigningIn = false, _isOTPValidation = false;
+
+  bool _isSigningIn = false;
   String fullNameError, emailError, passwordError, phoneNoError, countryCode = "+91";
 
   void performSignUp(){
-    FocusScope.of(context).requestFocus(new FocusNode());
-    if(isValidated()){
-      setState(() {
-        _isSigningIn = true;
-      });
-      signUpApi.performSignUp(SignUpRequest(
-        emailId: emailController.text,
-        isdCode: countryCode,
-        phoneNo: int.parse(phoneNoController.text),
-        password: passwordController.text
-      ));
+    if(!_isSigningIn) {
+      FocusScope.of(context).requestFocus(new FocusNode());
+      if (isValidated()) {
+        setState(() {
+          _isSigningIn = true;
+        });
+        signUpApi.performSignUp(SignUpRequest(
+            fullName: fullNameController.text,
+            emailId: emailController.text,
+            isdCode: countryCode,
+            phoneNo: int.parse(phoneNoController.text),
+            password: passwordController.text
+        ));
+      }
     }
   }
 
@@ -53,23 +59,7 @@ class _SignUpPage extends State<SignUpPage> implements SignUpCallBack, OTPCallBa
     setState(() {
       _isSigningIn = false;
     });
-    showOTPDialog();
-  }
-
-
-  @override
-  void onOTPSuccess(OTPResponse otpResponse) {
-    setState(() {
-      _isOTPValidation = false;
-    });
-  }
-
-  @override
-  void onOTPFailure(String message) {
-    setState(() {
-      _isOTPValidation = false;
-    });
-    appUtilities.showSnackBar(context, message, app_constants.ERROR);
+    showOTPDialog(signUpResponse);
   }
 
 
@@ -77,7 +67,6 @@ class _SignUpPage extends State<SignUpPage> implements SignUpCallBack, OTPCallBa
   void initState() {
     super.initState();
     signUpApi = SignUpApi(this);
-    otpApi = OTPApi(this);
   }
 
   @override
@@ -257,21 +246,6 @@ class _SignUpPage extends State<SignUpPage> implements SignUpCallBack, OTPCallBa
     }
   }
 
-  Widget setUpOTPLoaderButton(){
-    if(!_isOTPValidation){
-      return Text("Submit", style: TextStyle(fontSize: 14.0));
-    }
-    else{
-      return SizedBox(
-          width: 20.0,
-          height: 20.0,
-          child : CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-          )
-      );
-    }
-  }
-
   bool isValidated(){
     bool ret = true;
     String nameRegex = "^[a-zA-Z]+\\s{0,1}[a-zA-Z]*\$";
@@ -283,7 +257,7 @@ class _SignUpPage extends State<SignUpPage> implements SignUpCallBack, OTPCallBa
       phoneNoError = null;
 
     RegExp nameRxExp = new RegExp(
-      r"^[a-zA-Z]+\\s{0,1}[a-zA-Z]*\$",
+      r"^[a-zA-Z]+\s{0,1}[a-zA-Z]*$",
       caseSensitive: false,
       multiLine: false,
     );
@@ -318,6 +292,31 @@ class _SignUpPage extends State<SignUpPage> implements SignUpCallBack, OTPCallBa
     return ret;
   }
 
+  void showOTPDialog(SignUpResponse signUpResponse){
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (_){
+        return OTPDialog(signUpResponse: signUpResponse,);
+      }
+    );
+  }
+}
+
+class OTPDialog extends StatefulWidget{
+  OTPDialog({Key key, this.signUpResponse}) : super(key:key);
+
+  SignUpResponse signUpResponse;
+  _OTPDialog createState() => _OTPDialog(signUpResponse);
+
+}
+
+class _OTPDialog extends State<OTPDialog> implements OTPCallBack{
+
+  _OTPDialog(this.signUpResponse);
+
+  SignUpResponse signUpResponse;
+
   final FocusNode _otp1 = FocusNode();
   final FocusNode _otp2 = FocusNode();
   final FocusNode _otp3 = FocusNode();
@@ -332,49 +331,79 @@ class _SignUpPage extends State<SignUpPage> implements SignUpCallBack, OTPCallBa
   final _otp5Controller = new TextEditingController();
   final _otp6Controller = new TextEditingController();
 
-  void showOTPDialog(){
+  OTPApi otpApi;
+  bool _isOTPValidation = false;
+  String otpError = "";
+
+  @override
+  void initState() {
+    super.initState();
+    otpApi = new OTPApi(this);
+  }
+
+  @override
+  void onOTPSuccess(OTPResponse otpResponse) {
+    setState(() {
+      _isOTPValidation = false;
+    });
+    Navigator.of(context, rootNavigator: true).pop();
     showDialog(
-      barrierDismissible: true,
-      context: context,
-      builder: (BuildContext context){
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10.0)
-          ),
-          child: Container(
-            height: 200,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Row(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Expanded(
+        barrierDismissible: false,
+        context: context,
+        builder: (_){
+          return SuccessDialog();
+        }
+    );
+  }
+
+  @override
+  void onOTPFailure(String message) {
+    setState(() {
+      _isOTPValidation = false;
+      otpError = message;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0)
+      ),
+      child: Container(
+          height: 210,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Expanded(
                       child:
-                        Padding(
-                          padding: EdgeInsets.only(left: 10.0, right: 10.0, top: 10.0),
-                          child: Text("Please enter OTP",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.blue, fontSize: 16.0, fontWeight: FontWeight.bold),
-                          ),
-                        )
-                    )
-                  ],
-                ),
-                Row(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.only(left: 10.0, right: 5.0, top: 5.0, bottom: 5.0),
-                        child: TextFormField(
+                      Padding(
+                        padding: EdgeInsets.only(left: 10.0, right: 10.0, top: 15.0, bottom: 5.0),
+                        child: Text("Enter OTP",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.blue, fontSize: 14.0,),
+                        ),
+                      )
+                  )
+                ],
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 10.0, right: 5.0, top: 5.0, bottom: 5.0),
+                      child: TextFormField(
                           maxLength: 1,
                           textAlign: TextAlign.center,
                           keyboardType: TextInputType.number,
                           decoration: InputDecoration(
-                            counterText: ''
+                              counterText: ''
                           ),
                           focusNode: _otp1,
                           controller: _otp1Controller,
@@ -383,18 +412,18 @@ class _SignUpPage extends State<SignUpPage> implements SignUpCallBack, OTPCallBa
                               _fieldFocusChange(context, _otp1, _otp2);
                             }
                           }
-                        ),
                       ),
                     ),
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.all(5.0),
-                        child: TextFormField(
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.all(5.0),
+                      child: TextFormField(
                           maxLength: 1,
                           textAlign: TextAlign.center,
                           keyboardType: TextInputType.number,
                           decoration: InputDecoration(
-                            counterText: ''
+                              counterText: ''
                           ),
                           focusNode: _otp2,
                           controller: _otp2Controller,
@@ -403,18 +432,18 @@ class _SignUpPage extends State<SignUpPage> implements SignUpCallBack, OTPCallBa
                               _fieldFocusChange(context, _otp2, _otp3);
                             }
                           }
-                        ),
                       ),
                     ),
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.all(5.0),
-                        child: TextFormField(
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.all(5.0),
+                      child: TextFormField(
                           maxLength: 1,
                           textAlign: TextAlign.center,
                           keyboardType: TextInputType.number,
                           decoration: InputDecoration(
-                            counterText: ''
+                              counterText: ''
                           ),
                           focusNode: _otp3,
                           controller: _otp3Controller,
@@ -423,117 +452,112 @@ class _SignUpPage extends State<SignUpPage> implements SignUpCallBack, OTPCallBa
                               _fieldFocusChange(context, _otp3, _otp4);
                             }
                           }
-                        ),
                       ),
                     ),
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.all(5.0),
-                        child: TextFormField(
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.all(5.0),
+                      child: TextFormField(
                           maxLength: 1,
                           textAlign: TextAlign.center,
                           keyboardType: TextInputType.number,
                           decoration: InputDecoration(
-                            counterText: ''
+                              counterText: ''
                           ),
                           controller: _otp4Controller,
                           focusNode: _otp4,
-                            onChanged: (value){
-                              if(value.length == 1){
-                                _fieldFocusChange(context, _otp4, _otp5);
-                              }
-                            }
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.all(5.0),
-                        child: TextFormField(
-                          maxLength: 1,
-                          textAlign: TextAlign.center,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            counterText: ''
-                          ),
-                          controller: _otp5Controller,
-                          focusNode: _otp5,
                           onChanged: (value){
                             if(value.length == 1){
-                              _fieldFocusChange(context, _otp5, _otp6);
+                              _fieldFocusChange(context, _otp4, _otp5);
                             }
-                          },
-                        ),
+                          }
                       ),
                     ),
-                    Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.only(left: 5.0, right: 10.0, top: 5.0, bottom: 5.0),
-                        child: TextFormField(
-                          maxLength: 1,
-                          textAlign: TextAlign.center,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.all(5.0),
+                      child: TextFormField(
+                        maxLength: 1,
+                        textAlign: TextAlign.center,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
                             counterText: ''
-                          ),
-                          controller: _otp6Controller,
-                          focusNode: _otp6,
                         ),
+                        controller: _otp5Controller,
+                        focusNode: _otp5,
+                        onChanged: (value){
+                          if(value.length == 1){
+                            _fieldFocusChange(context, _otp5, _otp6);
+                          }
+                        },
                       ),
                     ),
-                  ],
-                ),
-                Row(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Expanded(
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 5.0, right: 10.0, top: 5.0, bottom: 5.0),
+                      child: TextFormField(
+                        maxLength: 1,
+                        textAlign: TextAlign.center,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                            counterText: ''
+                        ),
+                        controller: _otp6Controller,
+                        focusNode: _otp6,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Expanded(
                       child: Padding(
-                        padding: EdgeInsets.only(left: 10.0, right: 10.0, top:15.0, bottom: 10.0),
-                        child: MaterialButton(
-                          onPressed: validateOTP,
-                          color: Colors.blue,
-                          textColor: Colors.white,
-                          child: setUpOTPLoaderButton(),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(4.0)
+                          padding: EdgeInsets.only(left: 10.0, right: 10.0, top:15.0, bottom: 10.0),
+                          child: MaterialButton(
+                              onPressed: validateOTP,
+                              color: Colors.blue,
+                              textColor: Colors.white,
+                              child: setUpOTPLoaderButton(),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(4.0)
+                              )
                           )
-                        )
                       )
-                    )
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    Padding(
-                      padding: EdgeInsets.only(left: 10.0, right: 5.0, top: 5.0, bottom: 5.0),
-                      child: GestureDetector(
-                        onTap: (){},
-                        child: Text(
-                          "",
-                          style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-                        ),
+                  )
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Padding(
+                    padding: EdgeInsets.only(left: 10.0, right: 5.0, top: 5.0, bottom: 5.0),
+                    child: Text(
+                      otpError,
+                      style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+
+                  Padding(
+                    padding: EdgeInsets.only(left: 5.0, right: 10.0, top: 5.0, bottom: 5.0),
+                    child: GestureDetector(
+                      onTap: resendOTP,
+                      child: Text(
+                        "Resend OTP",
+                        style: TextStyle(color: Colors.blue),
                       ),
                     ),
-
-                    Padding(
-                        padding: EdgeInsets.only(left: 5.0, right: 10.0, top: 5.0, bottom: 5.0),
-                        child: GestureDetector(
-                          onTap: (){},
-                          child: Text(
-                            "Resend OTP",
-                            style: TextStyle(color: Colors.blue),
-                          ),
-                        ),
-                      ),
-                  ],
-                )
-              ],
-            )
-          ),
-        );
-      }
+                  ),
+                ],
+              )
+            ],
+          )
+      ),
     );
   }
 
@@ -543,6 +567,158 @@ class _SignUpPage extends State<SignUpPage> implements SignUpCallBack, OTPCallBa
   }
 
   void validateOTP(){
+    if(!_isOTPValidation) {
+      setState(() {
+        otpError = "";
+      });
+      FocusScope.of(context).requestFocus(new FocusNode());
+      if (_otp1Controller.text != null && _otp2Controller.text != null &&
+          _otp3Controller.text != null && _otp4Controller.text != null &&
+          _otp5Controller.text != null && _otp6Controller.text != null) {
+        setState(() {
+          _isOTPValidation = true;
+        });
+        String otp = _otp1Controller.text + _otp2Controller.text
+            + _otp3Controller.text + _otp4Controller.text
+            + _otp5Controller.text + _otp6Controller.text;
+        OTPRequest otpRequest = OTPRequest(
+          isdCode: signUpResponse.data.isdCode,
+          phoneNo: signUpResponse.data.phoneNo,
+          otp: int.parse(otp),
+        );
+        otpApi.validateOTP(otpRequest);
+      }
+      else {
+        setState(() {
+          otpError = "OTP entered in invalid";
+        });
+      }
+    }
+  }
 
+  void resendOTP(){
+    //TODO
+  }
+
+  Widget setUpOTPLoaderButton(){
+    if(!_isOTPValidation){
+      return Text("Submit", style: TextStyle(fontSize: 14.0));
+    }
+    else{
+      return SizedBox(
+          width: 20.0,
+          height: 20.0,
+          child : CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+          )
+      );
+    }
+  }
+}
+
+class SuccessDialog extends StatefulWidget{
+  SuccessDialog({Key key}) : super(key:key);
+  _SuccessDialog createState() => _SuccessDialog();
+}
+
+class _SuccessDialog extends State<SuccessDialog>{
+  final NavigationService _navigationService = locator<NavigationService>();
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+        shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10.0)
+        ),
+        child: Container(
+          height:220,
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            children: <Widget>[
+              Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: Container(
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                          ),
+                          child: Image.asset("assets/images/success_image.png")
+                      ),
+                    ),
+                  )
+                ],
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(bottom: 10),
+                      child: Text(
+                        "Registration Successful",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  )
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Container(
+                    margin: EdgeInsets.only(left: 15.0),
+                    child: GestureDetector(
+                      onTap: (){
+                        Navigator.of(context, rootNavigator: true).pop();
+                        _navigationService.navigateTo(routes.HomeRoute);
+                      },
+                      child: Row(
+                        children: <Widget>[
+                          Icon(
+                            Icons.home,
+                            color: Colors.blue,
+                          ),
+                          Text("Home",
+                            style: TextStyle(color: Colors.blue),
+                          )
+                        ],
+                      ),
+                    )
+                  ),
+                  Container(
+                    margin: EdgeInsets.only(right : 15.0),
+                    child: GestureDetector(
+                      onTap: (){
+                        Navigator.of(context, rootNavigator: true).pop();
+                        _navigationService.navigateTo(routes.LoginRoute);
+                      },
+                      child: Row(
+                        children: <Widget>[
+                          Icon(
+                            Icons.people,
+                            color: Colors.blue,
+                          ),
+                          Text("Login",
+                            style: TextStyle(color: Colors.blue),
+                          )
+                        ],
+                      ),
+                    )
+                  ),
+
+                ],
+              )
+            ],
+          )
+        )
+    );
   }
 }

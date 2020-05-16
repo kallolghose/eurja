@@ -23,14 +23,16 @@ String otpToJson(OTPRequest data) {
 
 class SignUpRequest{
 
+  String fullName;
   String emailId;
   String isdCode;
   int phoneNo;
   String password;
 
-  SignUpRequest({this.emailId, this.isdCode, this.phoneNo, this.password});
+  SignUpRequest({this.fullName, this.emailId, this.isdCode, this.phoneNo, this.password});
 
   Map<String, dynamic> toJson() => {
+    "fullName":fullName,
     "emailId":emailId,
     "isdCode":isdCode,
     "phoneNo":phoneNo,
@@ -46,15 +48,17 @@ class SignUpResponse extends APIResponse {
   factory SignUpResponse.fromJson(Map<String, dynamic> json) => new SignUpResponse(
     status: json['status'],
     message: json['message'],
-    error: (json['error'] as List<dynamic>).cast<String>(),
-    data : SignUpData(
+    error: json['error']!=null ? (json['error'] as List<dynamic>).cast<String>() : null,
+    data : json["data"]!=null ? SignUpData(
       userId: json["data"]["userId"],
       emailId: json["data"]["emailId"],
       phoneNo: json["data"]["phoneNo"],
       isdCode: json["data"]["isdCode"],
       status: json["data"]["status"],
-      active: json["data"]["active"]
-    )
+      active: json["data"]["active"],
+      firstName: json["data"]["firstName"],
+      lastName: json["data"]["lastName"]
+    ) : null
   );
 }
 
@@ -66,8 +70,10 @@ class SignUpData{
   String isdCode;
   String status;
   String active;
+  String firstName;
+  String lastName;
 
-  SignUpData({this.userId, this.emailId, this.phoneNo, this.isdCode, this.status, this.active});
+  SignUpData({this.userId, this.emailId, this.phoneNo, this.isdCode, this.status, this.active,this.firstName, this.lastName});
 
 }
 
@@ -95,7 +101,7 @@ class OTPResponse extends APIResponse {
   factory OTPResponse.fromJson(Map<String, dynamic> json) => new OTPResponse(
     status: json['status'],
     message: json['message'],
-    error: (json['error'] as List<dynamic>).cast<String>(),
+    error: json['error']!=null ? (json['error'] as List<dynamic>).cast<String>() : null,
     data: json["data"] !=null ?  OTPData(
         userId: json["data"]["userId"],
         emailId: json["data"]["emailId"],

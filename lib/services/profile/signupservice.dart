@@ -34,8 +34,13 @@ class OTPApi{
         body: otpToJson(otpRequest)
     );
     OTPResponse otpResponse = otpFromJson(response.body);
-    if(response.statusCode == 200)
-      return otpResponse;
+    if(response.statusCode == 200) {
+      if(otpResponse.status != false)
+        return otpResponse;
+      else{
+        throw (otpResponse.error[0]);
+      }
+    }
     else if(response.statusCode == 404)
       throw (otpResponse.message);
     else if(response.statusCode == 409)
@@ -54,7 +59,8 @@ class SignUpApi{
     signUp(signUpRequest).then((value) => {
       _signUpCallBack.onSignUpSuccess(value)
     }).catchError((error, stackTrace){
-      _signUpCallBack.onSignUpFailure(error);
+      print(stackTrace);
+      _signUpCallBack.onSignUpFailure(error.toString());
     });
   }
 

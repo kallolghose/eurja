@@ -17,7 +17,6 @@ class MyAppBar extends AppBar{
   final BuildContext context;
 }
 
-
 class AppUtilities{
 
   void showSnackBar(BuildContext context, String message, String messageType){

@@ -38,7 +38,7 @@ class LoginResponse extends APIResponse{
 
     status: json['status'],
     message: json['message'],
-    error: (json['error'] as List<dynamic>).cast<String>(),
+    error: json['error'] !=null ? (json['error'] as List<dynamic>).cast<String>() : null,
     data: json["data"] !=null ?  LoginData(
         firstName: json["data"]["firstName"],
         lastName: json["data"]["lastName"],

@@ -72,6 +72,7 @@ class _SignUpPage extends State<SignUpPage> implements SignUpCallBack {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: MyAppBar(myTitle: "Sign Up", context: context,),
       body: SafeArea(child:
         Container(

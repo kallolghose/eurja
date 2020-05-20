@@ -5,3 +5,4 @@ const String ShowBookingsRoute = 'Showbookings';
 const String ShowVehiclesRoute = 'Showvehicles';
 const String CreateBookingsRoute = 'Createbookings';
 const String CreateVehiclesRoute = 'Createvehicles';
+const String ErrorPage = 'ErrorPage';

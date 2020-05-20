@@ -31,6 +31,9 @@ class _BottomNavigation extends State<MyBottomNavigation>{
         case 1:
           _navigationService.navigateTo(routes.CreateBookingsRoute);
           break;
+        case 2:
+          _navigationService.navigateTo(routes.ErrorPage);
+          break;
         case 3:
           _navigationService.navigateTo(routes.LoginRoute);
           break;

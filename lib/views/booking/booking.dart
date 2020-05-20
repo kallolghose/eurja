@@ -12,13 +12,28 @@ class _BookingPage extends State<BookingPage>{
 
   String type, power, address, available;
   Color availableTextColor;
+  DateTime pickedDateTime;
+  TimeOfDay timeOfDay;
+  TextEditingController fullNameController, phoneNumberController, emailController,
+    dateController, timeController;
 
-  _BookingPage(){
+  @override
+  void initState() {
+    super.initState();
     type = "Type 2";
     power = "3.0 kW AC";
     address = "Sector 47, NOIDA, UP";
     available = "Available";
     availableTextColor = Color.fromRGBO(20, 140, 32, 1.0);
+    pickedDateTime = DateTime.now();
+    timeOfDay = TimeOfDay.now();
+
+    fullNameController = TextEditingController();
+    phoneNumberController = TextEditingController();
+    emailController = TextEditingController();
+    dateController = TextEditingController(text: pickedDateTime.toString());
+    timeController = TextEditingController(text: timeOfDay.toString());
+
   }
 
   @override
@@ -86,6 +101,7 @@ class _BookingPage extends State<BookingPage>{
                           SizedBox(width: 10,),
                           Expanded(
                             child: TextFormField(
+                              controller: fullNameController,
                               decoration: InputDecoration(
                                   hintText: "Full Name",
                                   isDense: true
@@ -104,6 +120,7 @@ class _BookingPage extends State<BookingPage>{
                           SizedBox(width: 10,),
                           Expanded(
                             child: TextFormField(
+                              controller: phoneNumberController,
                               decoration: InputDecoration(
                                   hintText: "Phone Number",
                                   isDense: true
@@ -125,6 +142,7 @@ class _BookingPage extends State<BookingPage>{
                           SizedBox(width: 10,),
                           Expanded(
                             child: TextFormField(
+                              controller: emailController,
                               decoration: InputDecoration(
                                   hintText: "Email",
                                   isDense: true
@@ -146,14 +164,21 @@ class _BookingPage extends State<BookingPage>{
                                 Text("Date : "),
                                 Expanded(
                                   child: TextFormField(
+                                    controller: dateController,
+                                    focusNode: FocusNode(),
+                                    enableInteractiveSelection: false,
                                     decoration: InputDecoration(
                                         isDense: true
                                     ),
                                   ),
                                 ),
-                                Icon(Icons.date_range,
-                                  color: Colors.blue,
-                                )
+                                GestureDetector(
+                                  onTap: _pickupDate,
+                                  child: Icon(Icons.date_range,
+                                    color: Colors.blue,
+                                  ),
+                                ),
+
                               ],
                             ),
                           ),
@@ -164,15 +189,20 @@ class _BookingPage extends State<BookingPage>{
                                 Text("Time : "),
                                 Expanded(
                                   child: TextFormField(
-
+                                    controller: timeController,
+                                    focusNode: FocusNode(),
+                                    enableInteractiveSelection: false,
                                     decoration: InputDecoration(
                                       isDense: true
                                     ),
                                   ),
                                 ),
-                                Icon(Icons.access_time,
-                                  color: Colors.blue,
-                                )
+                                GestureDetector(
+                                  onTap: _pickUpTime,
+                                  child: Icon(Icons.access_time,
+                                    color: Colors.blue,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -204,23 +234,33 @@ class _BookingPage extends State<BookingPage>{
     );
   }
 
-  _displayCalenderPopUp(){
+  _pickupDate() async {
     FocusScope.of(context).requestFocus(new FocusNode());
+    DateTime date = await showDatePicker(
+      context: context,
+      initialDate: pickedDateTime,
+      firstDate: DateTime(DateTime.now().year),
+      lastDate: DateTime(DateTime.now().year+5),
+      builder: (BuildContext context, Widget child) {
+        return Theme(
+          data: ThemeData.light(),
+          child: child,
+        );
+      },
+    );
+    if(date!=null){
 
+    }
   }
-}
 
-class CalenderDialog extends StatefulWidget{
-  CalenderDialog({Key key}) : super(key:key);
+  _pickUpTime() async {
+    FocusScope.of(context).requestFocus(new FocusNode());
+    TimeOfDay timeOfDay = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now()
+    );
+    if(timeOfDay != null){
 
-  _CalenderDialog createState() => _CalenderDialog();
-}
-
-class _CalenderDialog extends State<CalenderDialog>{
-
-  @override
-  Widget build(BuildContext context) {
-
+    }
   }
-
 }

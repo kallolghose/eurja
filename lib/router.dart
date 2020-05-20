@@ -5,6 +5,7 @@ import 'package:eurja/views/profile/login.dart';
 import 'package:eurja/views/profile/signup.dart';
 import 'package:eurja/views/map/googlemap.dart';
 import 'package:eurja/views/booking/booking.dart';
+import 'package:eurja/views/errors/notavailable.dart';
 
 Route<dynamic> generateRoute(RouteSettings settings) {
   switch (settings.name) {
@@ -17,12 +18,6 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case routes.CreateBookingsRoute:
       return MaterialPageRoute(builder: (context) => BookingPage());
     default:
-      return MaterialPageRoute(
-        builder: (context) => Scaffold(
-          body: Center(
-            child: Text('No path for ${settings.name}'),
-          ),
-        ),
-      );
+      return MaterialPageRoute(builder: (context) => SomethingWentWrongPage());
   }
 }

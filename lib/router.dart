@@ -16,7 +16,8 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     case routes.SignUpRoute:
       return MaterialPageRoute(builder: (context) => SignUpPage());
     case routes.CreateBookingsRoute:
-      return MaterialPageRoute(builder: (context) => BookingPage());
+      dynamic bookingArgs = settings.arguments;
+      return MaterialPageRoute(builder: (context) => BookingPage(chargerDetails: bookingArgs,));
     default:
       return MaterialPageRoute(builder: (context) => SomethingWentWrongPage());
   }

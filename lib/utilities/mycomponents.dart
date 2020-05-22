@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import 'package:eurja/constants/app_constants.dart' as constants;
 
@@ -33,6 +34,17 @@ class AppUtilities{
       backgroundColor: color,
     );
     Scaffold.of(context).showSnackBar(snackBar);
+  }
+
+  String getFormattedDate(DateTime date, String formatStr){
+    var formatter = DateFormat(formatStr);
+    String formatted = formatter.format(date);
+    return formatted;
+  }
+
+  String getFormattedTime(BuildContext context, TimeOfDay time){
+
+    return time.format(context);
   }
 
 }

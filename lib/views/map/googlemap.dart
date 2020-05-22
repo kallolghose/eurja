@@ -6,8 +6,10 @@ import 'package:geolocator/geolocator.dart';
 import 'package:eurja/services/inventory/stationservice.dart';
 import 'package:eurja/models/inventory/stationmodel.dart';
 import 'package:eurja/utilities/mycomponents.dart';
-import 'package:eurja/models/inventory/chargermodel.dart';
 import 'package:eurja/constants/app_constants.dart' as app_constants;
+import 'package:eurja/services/navigation_service.dart';
+import 'package:eurja/locator.dart';
+import 'package:eurja/constants/routes_path.dart' as routes;
 
 class MapSample extends StatefulWidget {
   @override
@@ -15,6 +17,9 @@ class MapSample extends StatefulWidget {
 }
 
 class MapSampleState extends State<MapSample> implements StationCallBack {
+
+  NavigationService _navigationService = locator<NavigationService>();
+
   Completer<GoogleMapController> _controller = Completer();
 
   static LatLng _initialPosition = LatLng(28.53556133580664, 77.391049655962);
@@ -288,7 +293,7 @@ class MapSampleState extends State<MapSample> implements StationCallBack {
   }
 
   _performBooking(StationData stationData, int index){
-
+    _navigationService.navigateToWithData(routes.CreateBookingsRoute, {"stationData" : stationData, "index" : index});
   }
 
   void _getUserLocation() async {

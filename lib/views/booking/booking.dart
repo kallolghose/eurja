@@ -1,43 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:eurja/utilities/mycomponents.dart';
+import 'package:eurja/models/inventory/stationmodel.dart';
+import 'package:eurja/models/inventory/chargermodel.dart';
 
 class BookingPage extends StatefulWidget{
-  BookingPage({Key key}) : super(key:key);
+  BookingPage({Key key, this.chargerDetails}) : super(key:key);
+
+  dynamic chargerDetails;
 
   @override
-  _BookingPage createState() => _BookingPage();
+  _BookingPage createState() => _BookingPage(chargerDetails);
 }
 
 class _BookingPage extends State<BookingPage>{
+
+  _BookingPage(this.chargerDetails);
+
+  dynamic chargerDetails;
 
   String type, power, address, available;
   Color availableTextColor;
   DateTime pickedDateTime;
   TimeOfDay timeOfDay;
   TextEditingController fullNameController, phoneNumberController, emailController,
-    dateController, timeController;
+      dateController, timeController;
+  AppUtilities _appUtilities = new AppUtilities();
 
   @override
   void initState() {
     super.initState();
-    type = "Type 2";
-    power = "3.0 kW AC";
-    address = "Sector 47, NOIDA, UP";
-    available = "Available";
-    availableTextColor = Color.fromRGBO(20, 140, 32, 1.0);
+
     pickedDateTime = DateTime.now();
     timeOfDay = TimeOfDay.now();
 
     fullNameController = TextEditingController();
     phoneNumberController = TextEditingController();
     emailController = TextEditingController();
-    dateController = TextEditingController(text: pickedDateTime.toString());
-    timeController = TextEditingController(text: timeOfDay.toString());
+    dateController = TextEditingController(text: _appUtilities.getFormattedDate(pickedDateTime, "yyyy-MM-dd"));
+    timeController = TextEditingController(text: _appUtilities.getFormattedTime(context, timeOfDay));
 
   }
 
   @override
   Widget build(BuildContext context) {
+    StationData stationData = chargerDetails['stationData'];
+    int index = chargerDetails['index'];
+    ChargerData chargerData = stationData.chargers[index];
+
+    type = chargerData.type;
+    power = chargerData.power.toString() + " kW " + chargerData.current.toUpperCase();
+    address = stationData.address + ", " + stationData.city + ", " + stationData.state;
+    available = (chargerData.status == "Y") ? "Avaialable" : "Not Available";
+    availableTextColor = (chargerData.status == "Y") ? Color.fromRGBO(20, 140, 32, 1.0) : Colors.red;
+
     return Scaffold(
       resizeToAvoidBottomPadding: false,
       appBar: MyAppBar(myTitle: "New Booking", context: context,),
@@ -164,12 +179,15 @@ class _BookingPage extends State<BookingPage>{
                                 Text("Date : "),
                                 Expanded(
                                   child: TextFormField(
+                                    enabled: false,
                                     controller: dateController,
                                     focusNode: FocusNode(),
                                     enableInteractiveSelection: false,
                                     decoration: InputDecoration(
-                                        isDense: true
+                                      isDense: true,
                                     ),
+                                    style: TextStyle(fontSize: 14),
+                                    textAlign: TextAlign.center,
                                   ),
                                 ),
                                 GestureDetector(
@@ -182,6 +200,7 @@ class _BookingPage extends State<BookingPage>{
                               ],
                             ),
                           ),
+                          SizedBox(width: 5,),
                           Expanded(
                             child: Row(
                               mainAxisSize: MainAxisSize.max,
@@ -189,12 +208,15 @@ class _BookingPage extends State<BookingPage>{
                                 Text("Time : "),
                                 Expanded(
                                   child: TextFormField(
+                                    enabled: false,
                                     controller: timeController,
                                     focusNode: FocusNode(),
                                     enableInteractiveSelection: false,
                                     decoration: InputDecoration(
-                                      isDense: true
+                                      isDense: true,
                                     ),
+                                    style: TextStyle(fontSize: 14),
+                                    textAlign: TextAlign.center,
                                   ),
                                 ),
                                 GestureDetector(
@@ -249,7 +271,7 @@ class _BookingPage extends State<BookingPage>{
       },
     );
     if(date!=null){
-
+      dateController.text = _appUtilities.getFormattedDate(date, "yyyy-MM-dd");
     }
   }
 
@@ -260,7 +282,7 @@ class _BookingPage extends State<BookingPage>{
         initialTime: TimeOfDay.now()
     );
     if(timeOfDay != null){
-
+      timeController.text = _appUtilities.getFormattedTime(context, timeOfDay);
     }
   }
 }

@@ -7,6 +7,10 @@ class NavigationService{
     return navigatorKey.currentState.pushNamed(routeName);
   }
 
+  Future<dynamic> navigateToWithData(String routeName, dynamic obj){
+    return navigatorKey.currentState.pushNamed(routeName, arguments: obj);
+  }
+
   void goBack(){
     return navigatorKey.currentState.pop();
   }

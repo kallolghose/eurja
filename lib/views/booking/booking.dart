@@ -29,6 +29,11 @@ class _BookingPage extends State<BookingPage>{
   @override
   void initState() {
     super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+
 
     pickedDateTime = DateTime.now();
     timeOfDay = TimeOfDay.now();
@@ -39,10 +44,6 @@ class _BookingPage extends State<BookingPage>{
     dateController = TextEditingController(text: _appUtilities.getFormattedDate(pickedDateTime, "yyyy-MM-dd"));
     timeController = TextEditingController(text: _appUtilities.getFormattedTime(context, timeOfDay));
 
-  }
-
-  @override
-  Widget build(BuildContext context) {
     StationData stationData = chargerDetails['stationData'];
     int index = chargerDetails['index'];
     ChargerData chargerData = stationData.chargers[index];
@@ -50,7 +51,7 @@ class _BookingPage extends State<BookingPage>{
     type = chargerData.type;
     power = chargerData.power.toString() + " kW " + chargerData.current.toUpperCase();
     address = stationData.address + ", " + stationData.city + ", " + stationData.state;
-    available = (chargerData.status == "Y") ? "Avaialable" : "Not Available";
+    available = (chargerData.status == "Y") ? "Available" : "Not Available";
     availableTextColor = (chargerData.status == "Y") ? Color.fromRGBO(20, 140, 32, 1.0) : Colors.red;
 
     return Scaffold(

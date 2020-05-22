@@ -216,7 +216,9 @@ class MapSampleState extends State<MapSample> implements StationCallBack {
               SizedBox(width: 10,),
               Expanded(
                 child: GestureDetector(
-                  onTap: _performBooking(stationData, index),
+                  onTap: (){
+                    _navigationService.navigateToWithData(routes.CreateBookingsRoute, {"stationData" : stationData, "index" : index});
+                  },
                   child :Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
@@ -290,10 +292,6 @@ class MapSampleState extends State<MapSample> implements StationCallBack {
         );
       }
     );
-  }
-
-  _performBooking(StationData stationData, int index){
-    _navigationService.navigateToWithData(routes.CreateBookingsRoute, {"stationData" : stationData, "index" : index});
   }
 
   void _getUserLocation() async {

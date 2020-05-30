@@ -174,7 +174,7 @@ class MapSampleState extends State<MapSample> implements StationCallBack {
                     shape: BoxShape.circle,
                   )
               ),
-              SizedBox(width: 25,),
+              SizedBox(width: 10,),
               Container(
                 width: 40,
                 height: 40,
@@ -203,12 +203,13 @@ class MapSampleState extends State<MapSample> implements StationCallBack {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
-                    "Rate",
+                    "Rate (Rs.)",
                     textAlign: TextAlign.left,
                   ),
                   SizedBox(height: 4,),
                   Text(
-                    "6 kW/min",
+                    stationData.chargers[index].price.ratePerHr.toString() + "/hr, " +
+                    stationData.chargers[index].price.ratePerMin.toString() + "/min",
                     textAlign: TextAlign.left,
                   )
                 ],

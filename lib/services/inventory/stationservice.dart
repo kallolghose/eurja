@@ -17,8 +17,9 @@ class StationApi{
   getAllStations(){
     getAll().then((value) => {
       _stationCallBack.onStationSuccess(value)
-    }).catchError((onError, stackTrance){
-      _stationCallBack.onStationFailure(onError);
+    }).catchError((onError, stackTrace){
+      print(stackTrace);
+      _stationCallBack.onStationFailure("Something went wrong");
     });
   }
 
@@ -28,9 +29,11 @@ class StationApi{
           'content-type': 'application/json'
         }
     );
-    StationResponse stationResponse = stationFromJson(response.body);
-    if(response.statusCode == 200)
+    print(response.statusCode);
+    if(response.statusCode == 200) {
+      StationResponse stationResponse = stationFromJson(response.body);
       return stationResponse;
+    }
     else
       throw ("Something went wrong !!");
   }

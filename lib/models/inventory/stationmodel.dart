@@ -53,12 +53,12 @@ class StationResponse extends APIResponse{
                   power: k['power'],
                   current: k['current'],
                   cable: k['cable'],
-                  chargerPricingDetails: k['chargerPricingDetails']!=null ? ChargerPricingDetails(
-                    id: k['chargerPricingDetails']['id'],
-                    chargerUdid: k['chargerPricingDetails']['chargerUdid'],
-                    pricingUdid: k['chargerPricingDetails']['pricingUdid'],
-                    ratePerHr: k['chargerPricingDetails']['ratePerHr'],
-                    ratePerMin: k['chargerPricingDetails']['ratePerMin'],
+                  price: k['price']!=null ? ChargerPricingDetails(
+                    id: k['price']['id'],
+                    chargerUdid: k['price']['chargerUdid'],
+                    pricingUdid: k['price']['pricingUdid'],
+                    ratePerHr: k['price']['ratePerHour'],
+                    ratePerMin: k['price']['ratePerMinute'],
                   ) : null
               );
             }).toList()

@@ -19,6 +19,7 @@ class _BookingPage extends State<BookingPage>{
   dynamic chargerDetails;
 
   String type, power, address, available;
+  double ratePerHr, ratePerMin;
   Color availableTextColor;
   DateTime pickedDateTime;
   TimeOfDay timeOfDay;
@@ -53,6 +54,8 @@ class _BookingPage extends State<BookingPage>{
     address = stationData.address + ", " + stationData.city + ", " + stationData.state;
     available = (chargerData.status == "Y") ? "Available" : "Not Available";
     availableTextColor = (chargerData.status == "Y") ? Color.fromRGBO(20, 140, 32, 1.0) : Colors.red;
+    ratePerHr = chargerData!=null && chargerData.price!=null ? chargerData.price.ratePerHr : 0.0;
+    ratePerMin = chargerData!=null && chargerData.price!=null ? chargerData.price.ratePerMin : 0.0;
 
     return Scaffold(
       resizeToAvoidBottomPadding: false,
@@ -84,11 +87,13 @@ class _BookingPage extends State<BookingPage>{
                         children: <Widget>[
                           SizedBox(height: 20,),
                           Text(type),
-                          SizedBox(height: 8,),
+                          SizedBox(height: 3,),
                           Text(power),
-                          SizedBox(height: 8,),
+                          SizedBox(height: 3,),
                           Text(address),
-                          SizedBox(height: 8,),
+                          SizedBox(height: 3,),
+                          Text("Rs " + ratePerHr.toString() + "/hr, Rs" + ratePerMin.toString() + "/min"),
+                          SizedBox(height: 3,),
                           Text(available,
                           style: TextStyle(color: availableTextColor, fontWeight: FontWeight.bold),),
                         ],

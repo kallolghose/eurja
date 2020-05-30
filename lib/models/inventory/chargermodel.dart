@@ -37,12 +37,12 @@ class ChargerResponse extends APIResponse{
               power: e['power'],
               current: e['current'],
               cable: e['cable'],
-              chargerPricingDetails: e['chargerPricingDetails']!=null ? ChargerPricingDetails(
-                id: e['chargerPricingDetails']['id'],
-                chargerUdid: e['chargerPricingDetails']['chargerUdid'],
-                pricingUdid: e['chargerPricingDetails']['pricingUdid'],
-                ratePerHr: e['chargerPricingDetails']['ratePerHr'],
-                ratePerMin: e['chargerPricingDetails']['ratePerMin'],
+              price: e['price']!=null ? ChargerPricingDetails(
+                id: e['price']['id'],
+                chargerUdid: e['price']['chargerUdid'],
+                pricingUdid: e['price']['pricingUdid'],
+                ratePerHr: e['price']['ratePerHour'],
+                ratePerMin: e['price']['ratePerMinute'],
               ) : null
           );
         }).toList():null,
@@ -69,11 +69,11 @@ class ChargerData{
   double power;
   String current;
   bool cable;
-  ChargerPricingDetails chargerPricingDetails;
+  ChargerPricingDetails price;
 
   ChargerData({this.id, this.chargerUdid, this.stationUdid, this.serialnumber, this.qrData, this.type,
     this.chargerName, this.latitude, this.longitude, this.vendorname, this.firmwareversion, this.lastonline, this.status,
-    this.statusVal, this.power, this.current, this.cable, this.chargerPricingDetails});
+    this.statusVal, this.power, this.current, this.cable, this.price});
 
 }
 

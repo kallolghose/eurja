@@ -28,9 +28,10 @@ class StationApi{
           'content-type': 'application/json'
         }
     );
-    StationResponse stationResponse = stationFromJson(response.body);
-    if(response.statusCode == 200)
+    if(response.statusCode == 200) {
+      StationResponse stationResponse = stationFromJson(response.body);
       return stationResponse;
+    }
     else
       throw ("Something went wrong !!");
   }

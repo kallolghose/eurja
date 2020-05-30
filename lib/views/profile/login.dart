@@ -4,6 +4,8 @@ import 'package:eurja/services/navigation_service.dart';
 import 'package:eurja/locator.dart';
 import 'package:eurja/models/profile/loginmodels.dart';
 import 'package:eurja/services/profile/loginservice.dart' as loginService;
+import 'package:eurja/models/profile/utilitiesmodel.dart';
+import 'package:eurja/services/profile/utilitiesservice.dart';
 import 'package:eurja/utilities/mycomponents.dart';
 import 'package:eurja/constants/app_constants.dart' as app_constants;
 
@@ -15,7 +17,7 @@ class LoginPage extends StatefulWidget{
   _LoginPageState createState() => _LoginPageState();
 
 }
-class _LoginPageState extends State<LoginPage> implements loginService.LoginCallBack{
+class _LoginPageState extends State<LoginPage> implements loginService.LoginCallBack, UtilitiesCallBack{
 
   final NavigationService _navigationService = locator<NavigationService>();
   final AppUtilities _appUtilities = AppUtilities();
@@ -27,7 +29,8 @@ class _LoginPageState extends State<LoginPage> implements loginService.LoginCall
   String countryCode = "+91";
   bool _isLoggingIn = false;
   loginService.LoginApi loginApi;
-
+  UtilitiesAPI utilitiesAPI;
+  List<CountryCodeData> data = new List();
 
   void performLogin(){
     FocusScope.of(context).requestFocus(new FocusNode());
@@ -64,11 +67,26 @@ class _LoginPageState extends State<LoginPage> implements loginService.LoginCall
     });
   }
 
+
+  @override
+  void onCountryCodeSuccess(CountryCodeResponse countryCodeResponse) {
+    setState(() {
+      data = countryCodeResponse.data;
+    });
+  }
+
+  @override
+  void onCountryCodeFailure(String message) {
+
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     loginApi = new loginService.LoginApi(this);
+    utilitiesAPI = new UtilitiesAPI(this);
+    utilitiesAPI.getCountryCodes();
   }
 
   @override
@@ -96,32 +114,31 @@ class _LoginPageState extends State<LoginPage> implements loginService.LoginCall
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    Expanded(
-                      child: Container(
-                          height:65,
-                          child: DropdownButton<String>(
-                            value: countryCode,
-                            icon: Icon(Icons.arrow_drop_down),
-                            iconSize: 24,
-                            elevation: 16,
-                            underline: Container(
-                              height: 0,
-                              color: Colors.black26,
+                    Container(
+                      height: 65,
+                      child: DropdownButton<String>(
+                        value: countryCode,
+                        icon: Icon(Icons.arrow_drop_down),
+                        iconSize: 24,
+                        elevation: 16,
+                        underline: Container(
+                          height: 0,
+                          color: Colors.black26,
+                        ),
+                        onChanged: (String newValue) {
+                          countryCode = newValue;
+                          setState(() {
+                          });
+                        },
+                        items: data.map((e) {
+                          return new DropdownMenuItem(
+                            child: new Text(e.displayText,
+                              textAlign: TextAlign.center,
                             ),
-                            onChanged: (String newValue) {
-                              countryCode = newValue;
-                              setState(() {
-                              });
-                            },
-                            items: <String>['+1', '+10', '+91', '+89']
-                                .map<DropdownMenuItem<String>>((String value) {
-                              return DropdownMenuItem<String>(
-                                value: value,
-                                child: Text(value),
-                              );
-                            }).toList(),
-                          )
-                      ),
+                            value: "+" + e.countryCode.toString(),
+                          );
+                        }).toList(),
+                      )
                     ),
                     Expanded(
                         child: Container(
@@ -147,7 +164,6 @@ class _LoginPageState extends State<LoginPage> implements loginService.LoginCall
                             },
                           ),
                         ),
-                        flex : 6
                     )
                   ],
                 ),
@@ -221,4 +237,5 @@ class _LoginPageState extends State<LoginPage> implements loginService.LoginCall
         );
     }
   }
+
 }

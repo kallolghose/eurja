@@ -17,6 +17,7 @@ class LoginApi{
     validateLogin(loginRequest).then((value) => {
       _callBack.onLoginSuccess(value)
     }).catchError((error, stackTrace) {
+      print(error);
       _callBack.onLoginFailure(error);
     });
   }

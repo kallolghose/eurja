@@ -4,6 +4,8 @@ import 'package:eurja/services/navigation_service.dart';
 import 'package:eurja/locator.dart';
 import 'package:eurja/models/profile/loginmodels.dart';
 import 'package:eurja/services/profile/loginservice.dart' as loginService;
+import 'package:eurja/models/profile/utilitiesmodel.dart';
+import 'package:eurja/services/profile/utilitiesservice.dart';
 import 'package:eurja/utilities/mycomponents.dart';
 import 'package:eurja/constants/app_constants.dart' as app_constants;
 
@@ -15,7 +17,7 @@ class LoginPage extends StatefulWidget{
   _LoginPageState createState() => _LoginPageState();
 
 }
-class _LoginPageState extends State<LoginPage> implements loginService.LoginCallBack{
+class _LoginPageState extends State<LoginPage> implements loginService.LoginCallBack, UtilitiesCallBack{
 
   final NavigationService _navigationService = locator<NavigationService>();
   final AppUtilities _appUtilities = AppUtilities();
@@ -23,26 +25,23 @@ class _LoginPageState extends State<LoginPage> implements loginService.LoginCall
   final phoneNoController = TextEditingController();
   final passwordController = TextEditingController();
 
-  String _phoneNoError, _passwordError;
-  String countryCode = "+91";
+  CountryCodeData selectedCountryCode;
   bool _isLoggingIn = false;
   loginService.LoginApi loginApi;
-
+  UtilitiesAPI utilitiesAPI;
+  List<CountryCodeData> data = new List();
+  GlobalKey<FormState> loginKey = new GlobalKey<FormState>();
 
   void performLogin(){
     FocusScope.of(context).requestFocus(new FocusNode());
-    if(phoneNoController.text.length != 10) {
-      setState(() {
-        _phoneNoError = "Enter Valid Phone Number";
-      });
-    }
-    else{
+
+    if(loginKey.currentState.validate()){
       //Create the login request model and hit the API
       setState(() {
         _isLoggingIn = true;
       });
       loginApi.performLogin(LoginRequest(
-        isdCode: countryCode,
+        isdCode: "+" + selectedCountryCode.countryCode.toString(),
         phoneNo: int.parse(phoneNoController.text),
         password: passwordController.text
       ));
@@ -62,13 +61,31 @@ class _LoginPageState extends State<LoginPage> implements loginService.LoginCall
     setState(() {
       _isLoggingIn = false;
     });
+    _appUtilities.saveLoginInformation(loginResponse);
+  }
+
+
+  @override
+  void onCountryCodeSuccess(CountryCodeResponse countryCodeResponse) {
+    setState(() {
+      data = countryCodeResponse.data;
+    });
+  }
+
+  @override
+  void onCountryCodeFailure(String message) {
+
   }
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
+    selectedCountryCode = new CountryCodeData(countryCode: 91, countryCodeString: "IN", countryName: "India", countryImage: "https://www.countryflags.io/in/flat/16.png",
+    displayText: "(IN) +91", phoneNumberLength: 10);
     loginApi = new loginService.LoginApi(this);
+    utilitiesAPI = new UtilitiesAPI(this);
+    utilitiesAPI.getCountryCodes();
+
   }
 
   @override
@@ -80,128 +97,141 @@ class _LoginPageState extends State<LoginPage> implements loginService.LoginCall
 
   @override
   Widget build(BuildContext context) {
+    //Set a default country code
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Container(
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.center,
-
-          children: <Widget>[
-            Padding(
-              padding: EdgeInsets.only(left: 4.0, right: 4.0),
-              child: Container(
-                height: 65,
-                child: Row(
-                  mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Expanded(
-                      child: Container(
-                          height:65,
-                          child: DropdownButton<String>(
-                            value: countryCode,
-                            icon: Icon(Icons.arrow_drop_down),
-                            iconSize: 24,
-                            elevation: 16,
-                            underline: Container(
-                              height: 0,
-                              color: Colors.black26,
+        child:
+        Form(
+          key: loginKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Padding(
+                padding: EdgeInsets.only(left: 4.0, right: 4.0),
+                child: Container(
+                  height: 65,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Container(
+                          height: 65,
+                          child: ButtonTheme(
+                            alignedDropdown: false,
+                            child: DropdownButton<CountryCodeData>(
+                              hint: Text("C.Code"),
+                              isExpanded: false,
+                              icon: Icon(Icons.arrow_drop_down),
+                              iconSize: 24,
+                              elevation: 16,
+                              underline: Container(
+                                height: 0,
+                                color: Colors.black26,
+                              ),
+                              onChanged: (CountryCodeData newValue) {
+                                selectedCountryCode = newValue;
+                                setState(() {
+                                  selectedCountryCode;
+                                });
+                              },
+                              value: selectedCountryCode,
+                              items: data.map((e) {
+                                return new DropdownMenuItem(
+                                  child: new Text(e.displayText,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  value: e,
+                                );
+                              }).toList(),
                             ),
-                            onChanged: (String newValue) {
-                              countryCode = newValue;
-                              setState(() {
-                              });
-                            },
-                            items: <String>['+1', '+10', '+91', '+89']
-                                .map<DropdownMenuItem<String>>((String value) {
-                              return DropdownMenuItem<String>(
-                                value: value,
-                                child: Text(value),
-                              );
-                            }).toList(),
                           )
                       ),
-                    ),
-                    Expanded(
+                      Expanded(
                         child: Container(
                           height: 65,
                           child: TextFormField(
                             decoration: InputDecoration(
                                 suffixIcon: Icon(Icons.phone,
                                   color: Colors.blue,),
-                                hintText: "Phone Number",
-                                errorText: _phoneNoError),
+                                hintText: "Phone Number"),
                             controller: phoneNoController,
                             keyboardType: TextInputType.number,
                             onChanged: (value){
-                              if(value.length!=0 && value.length!=10){
-                                _phoneNoError = "Phone number not proper";
-                              }
-                              else{
-                                _phoneNoError = null;
-                              }
-                              setState(() {
 
-                              });
+                            },
+                            validator: (value) {
+                              if(value == null && value.isEmpty)
+                                return "Please enter phone number";
+                              if(value !=null && value.length!=0 && value.length!=selectedCountryCode.phoneNumberLength){
+                                return "Please enter a valid phone number";
+                              }
+                              else
+                                return null;
                             },
                           ),
                         ),
-                        flex : 6
-                    )
+                      )
+                    ],
+                  ),
+                ),
+              ),
+              Padding(padding: EdgeInsets.only(left: 4.0, right: 4.0),
+                child: Container(
+                  height: 65,
+                  child: TextFormField(decoration: InputDecoration(
+                      hintText: 'Password',
+                      suffixIcon: Icon(Icons.remove_red_eye,
+                        color: Colors.blue,)
+                  ),
+                    obscureText: true,
+                    controller: passwordController,
+                    validator: (value){
+                      if(value == null && value.isEmpty)
+                        return "Please enter password";
+                      return null;
+                    },
+                  ),
+                ),
+              ),
+              Padding(padding: EdgeInsets.only(left: 4.0, right: 4.0),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 45.0,
+                    child: MaterialButton(
+                      color: Colors.blue,
+                      textColor: Colors.white,
+                      onPressed: performLogin,
+                      child: setUpLoaderButton(),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4.0)
+                      ),
+                    ),
+                  )
+              ),
+              Padding(padding: EdgeInsets.only(right:4.0, top:10.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  textDirection: TextDirection.rtl,
+                  children: <Widget>[
+                    GestureDetector(
+                      onTap: (){
+                        _navigationService.navigateTo(routes.SignUpRoute);
+                      },
+                      child: Text(
+                        'Signup',
+                        textAlign: TextAlign.right,
+                        style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+                      ),
+                    ),
                   ],
                 ),
-              ),
-            ),
-            Padding(padding: EdgeInsets.only(left: 4.0, right: 4.0),
-              child: Container(
-                height: 65,
-                child: TextFormField(decoration: InputDecoration(
-                    hintText: 'Password',
-                    errorText: _passwordError,
-                    suffixIcon: Icon(Icons.remove_red_eye,
-                      color: Colors.blue,)                ),
-                  obscureText: true,
-                  controller: passwordController,
-                ),
-              ),
-            ),
-            Padding(padding: EdgeInsets.only(left: 4.0, right: 4.0),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 45.0,
-                  child: MaterialButton(
-                    color: Colors.blue,
-                    textColor: Colors.white,
-                    onPressed: performLogin,
-                    child: setUpLoaderButton(),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4.0)
-                    ),
-                  ),
-                )
-            ),
-            Padding(padding: EdgeInsets.only(right:4.0, top:10.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                textDirection: TextDirection.rtl,
-                children: <Widget>[
-                  GestureDetector(
-                    onTap: (){
-                      _navigationService.navigateTo(routes.SignUpRoute);
-                    },
-                    child: Text(
-                      'Signup',
-                      textAlign: TextAlign.right,
-                      style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
-
-                    ),
-                  ),
-                ],
-              ),
-            )
-          ],
-        ),
+              )
+            ],
+          ),
+        )
       ),
       //bottomNavigationBar: MyBottomNavigation(currentIndex: 3,),
     );
@@ -221,4 +251,5 @@ class _LoginPageState extends State<LoginPage> implements loginService.LoginCall
         );
     }
   }
+
 }

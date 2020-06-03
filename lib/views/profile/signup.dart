@@ -1,3 +1,4 @@
+import 'package:eurja/services/profile/utilitiesservice.dart';
 import 'package:flutter/material.dart';
 import 'package:eurja/utilities/mycomponents.dart';
 import 'package:eurja/services/profile/signupservice.dart';
@@ -5,6 +6,7 @@ import 'package:eurja/models/profile/signupmodels.dart';
 import 'package:eurja/constants/app_constants.dart' as app_constants;
 import 'package:eurja/constants/routes_path.dart' as routes;
 import 'package:eurja/services/navigation_service.dart';
+import 'package:eurja/models/profile/utilitiesmodel.dart';
 import 'package:eurja/locator.dart';
 
 class SignUpPage extends StatefulWidget{
@@ -15,30 +17,33 @@ class SignUpPage extends StatefulWidget{
 
 }
 
-class _SignUpPage extends State<SignUpPage> implements SignUpCallBack {
+class _SignUpPage extends State<SignUpPage> implements SignUpCallBack,UtilitiesCallBack {
 
   final fullNameController = TextEditingController();
   final emailController = TextEditingController();
   final phoneNoController = TextEditingController();
   final passwordController = TextEditingController();
   final AppUtilities appUtilities = AppUtilities();
+  List<CountryCodeData> data = new List();
 
   SignUpApi signUpApi;
+  UtilitiesAPI utilitiesAPI;
+  CountryCodeData selectedCountryCode;
 
   bool _isSigningIn = false;
-  String fullNameError, emailError, passwordError, phoneNoError, countryCode = "+91";
+  GlobalKey<FormState> signUpKey = new GlobalKey<FormState>();
 
   void performSignUp(){
     if(!_isSigningIn) {
       FocusScope.of(context).requestFocus(new FocusNode());
-      if (isValidated()) {
+      if (signUpKey.currentState.validate()) {
         setState(() {
           _isSigningIn = true;
         });
         signUpApi.performSignUp(SignUpRequest(
             fullName: fullNameController.text,
             emailId: emailController.text,
-            isdCode: countryCode,
+            isdCode: "+" + selectedCountryCode.countryCode.toString(),
             phoneNo: int.parse(phoneNoController.text),
             password: passwordController.text
         ));
@@ -62,11 +67,27 @@ class _SignUpPage extends State<SignUpPage> implements SignUpCallBack {
     showOTPDialog(signUpResponse);
   }
 
+  @override
+  void onCountryCodeSuccess(CountryCodeResponse countryCodeResponse) {
+    setState(() {
+      data = countryCodeResponse.data;
+    });
+  }
+
+  @override
+  void onCountryCodeFailure(String message) {
+
+  }
 
   @override
   void initState() {
     super.initState();
+    selectedCountryCode = new CountryCodeData(countryCode: 91, countryCodeString: "IN", countryName: "India",
+        countryImage:"https://www.countryflags.io/in/flat/16.png",displayText: "(IN) +91", phoneNumberLength: 10
+    );
     signUpApi = SignUpApi(this);
+    utilitiesAPI = UtilitiesAPI(this);
+    utilitiesAPI.getCountryCodes();
   }
 
   @override
@@ -76,156 +97,182 @@ class _SignUpPage extends State<SignUpPage> implements SignUpCallBack {
       appBar: MyAppBar(myTitle: "Sign Up", context: context,),
       body: SafeArea(child:
         Container(
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            children: <Widget>[
-              Padding(
-                padding: EdgeInsets.only(left: 4.0, right: 4.0, top: 10.0),
-                child: Container(
-                  height:65,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Expanded(
-                        child: Container(
-                            height:65,
-                            child: DropdownButton<String>(
-                              value: countryCode,
-                              icon: Icon(Icons.arrow_drop_down),
-                              iconSize: 24,
-                              elevation: 16,
-                              underline: Container(
-                                height: 0,
-                                color: Colors.blue,
+          child: Form(
+            key: signUpKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              children: <Widget>[
+                Padding(
+                  padding: EdgeInsets.only(left: 4.0, right: 4.0, top: 10.0),
+                  child: Container(
+                    height:65,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Container(
+                            height: 65,
+                            child: ButtonTheme(
+                              alignedDropdown: false,
+                              child: DropdownButton<CountryCodeData>(
+                                value: selectedCountryCode,
+                                isExpanded: false,
+                                icon: Icon(Icons.arrow_drop_down),
+                                iconSize: 24,
+                                elevation: 16,
+                                underline: Container(
+                                  height: 0,
+                                  color: Colors.black26,
+                                ),
+                                onChanged: (CountryCodeData newValue) {
+                                  selectedCountryCode = newValue;
+                                  setState(() {
+                                  });
+                                },
+                                items: data.map((e) {
+                                  return new DropdownMenuItem(
+                                    child: new Text(e.displayText,
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    value: e,
+                                  );
+                                }).toList(),
                               ),
-                              onChanged: (String newValue) {
-                                countryCode = newValue;
-                                setState(() {
-                                });
-                              },
-                              items: <String>['+1', '+10', '+91', '+89']
-                                  .map<DropdownMenuItem<String>>((String value) {
-                                return DropdownMenuItem<String>(
-                                  value: value,
-                                  child: Text(value),
-                                );
-                              }).toList(),
                             )
                         ),
-                      ),
-                      Expanded(
+                        Expanded(
                           child: Container(
                             height: 65,
                             child: TextFormField(
-                              decoration: InputDecoration(
-                                  hintText: "Phone Number",
-                                  errorText: phoneNoError,
-                                  suffixIcon: Icon(Icons.phone,
-                                    color: Colors.blue,)
-                              ),
-                              controller: phoneNoController,
-                              keyboardType: TextInputType.number,
-                              onChanged: (value){
-                                if(value.length!=0 && value.length!=10){
-                                  phoneNoError = "Phone number not proper";
+                                decoration: InputDecoration(
+                                    hintText: "Phone Number",
+                                    suffixIcon: Icon(Icons.phone,
+                                      color: Colors.blue,)
+                                ),
+                                controller: phoneNoController,
+                                keyboardType: TextInputType.number,
+                                onChanged: (value){
+                                },
+                                validator: (value) {
+                                  if(value == null && value.isEmpty)
+                                    return "Please enter phone number";
+                                  if(value !=null && value.length!=0 && value.length!=selectedCountryCode.phoneNumberLength){
+                                    return "Please enter a valid phone number";
+                                  }
+                                  else
+                                    return null;
                                 }
-                                else{
-                                  phoneNoError = null;
-                                }
-                                setState(() {
-
-                                });
-                              },
                             ),
                           ),
-                          flex : 6
-                      )
-                    ],
+                        )
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              Padding(
-                padding:EdgeInsets.only(left: 4.0, right: 4.0),
-                child: Container(
-                  height: 65,
-                  child: TextFormField(
-                    decoration: InputDecoration(
+                Padding(
+                  padding:EdgeInsets.only(left: 4.0, right: 4.0),
+                  child: Container(
+                    height: 65,
+                    child: TextFormField(
+                      decoration: InputDecoration(
                         hintText: 'Full Name',
-                        errorText: fullNameError,
                         suffixIcon: Icon(Icons.art_track,
                           color: Colors.blue,),
 
                       ),
-                    controller: fullNameController,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.only(left: 4.0, right: 4.0),
-                child: Container(
-                  height: 65,
-                  child: TextFormField(
-                    decoration: InputDecoration(
-                      hintText: 'Email',
-                      errorText: emailError,
-                      suffixIcon: Icon(Icons.mail,
-                        color: Colors.blue,),
+                      controller: fullNameController,
+                      validator: (value){
+                        if(value == null || value.isEmpty)
+                          return "Please enter full name";
+                        else{
+                          RegExp nameRxExp = new RegExp(
+                            r"^[a-zA-Z]+\s{0,1}[a-zA-Z]*$",
+                            caseSensitive: false,
+                            multiLine: false,
+                          );
+                          if(!nameRxExp.hasMatch(value)) {
+                            return "Please enter a valid name.";
+                          }
+                        }
+                        return null;
+                      },
                     ),
-                    onChanged: (value){
-                      if(value.length == 0){
-                        emailError = null;
-                      }
-                    },
-                    controller: emailController,
                   ),
                 ),
-              ),
-              Padding(
-                padding: EdgeInsets.only(left: 4.0, right: 4.0),
-                child: Container(
-                  height: 65,
-                  child: TextFormField(
-                    decoration: InputDecoration(
-                        hintText: 'Password',
-                        errorText: passwordError,
-                        suffixIcon: Icon(Icons.remove_red_eye,
-                          color: Colors.blue,)
-                    ),
-                    obscureText: true,
-                    onChanged: (value){
-                      if(value.length == 0 || value.length >=6){
-                        passwordError = null;
-                      }
-                      else{
-                        passwordError = "Password should be > 6";
-                      }
-                      setState(() {
-                      });
-
-                    },
-                    controller: passwordController,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.all(4.0),
-                child: SizedBox(
-                    width: double.infinity,
-                    height: 45.0,
-                    child: MaterialButton(
-                      color: Colors.blue,
-                      textColor: Colors.white,
-                      onPressed: performSignUp,
-                      child: setUpLoaderButton(),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4.0)
+                Padding(
+                  padding: EdgeInsets.only(left: 4.0, right: 4.0),
+                  child: Container(
+                    height: 65,
+                    child: TextFormField(
+                      decoration: InputDecoration(
+                        hintText: 'Email',
+                        suffixIcon: Icon(Icons.mail,
+                          color: Colors.blue,),
                       ),
-                    )
+                      onChanged: (value){
+
+                      },
+                      controller: emailController,
+                      validator: (value){
+                        if(value == null || value.isEmpty)
+                          return "Please enter Email Address";
+                        else{
+                          RegExp emailRxExp = new RegExp(
+                            r"^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$",
+                            caseSensitive: false,
+                            multiLine: false,
+                          );
+                          if(!emailRxExp.hasMatch(value)){
+                            return "Please enter a valid email";
+                          }
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
                 ),
-              )
-            ],
-          ),
+                Padding(
+                  padding: EdgeInsets.only(left: 4.0, right: 4.0),
+                  child: Container(
+                    height: 65,
+                    child: TextFormField(
+                      decoration: InputDecoration(
+                          hintText: 'Password',
+                          suffixIcon: Icon(Icons.remove_red_eye,
+                            color: Colors.blue,)
+                      ),
+                      obscureText: true,
+                      onChanged: (value){
+
+                      },
+                      controller: passwordController,
+                      validator: (value){
+                        if(value == null || value.isEmpty)
+                          return "Please enter password";
+                        return null;
+                      },
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(4.0),
+                  child: SizedBox(
+                      width: double.infinity,
+                      height: 45.0,
+                      child: MaterialButton(
+                        color: Colors.blue,
+                        textColor: Colors.white,
+                        onPressed: performSignUp,
+                        child: setUpLoaderButton(),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4.0)
+                        ),
+                      )
+                  ),
+                )
+              ],
+            ),
+          )
         )
       ),
       //bottomNavigationBar: MyBottomNavigation(currentIndex: 3),
@@ -245,52 +292,6 @@ class _SignUpPage extends State<SignUpPage> implements SignUpCallBack {
           )
       );
     }
-  }
-
-  bool isValidated(){
-    bool ret = true;
-    String nameRegex = "^[a-zA-Z]+\\s{0,1}[a-zA-Z]*\$";
-    if(phoneNoController.text.length != 10){
-      phoneNoError = 'Please enter a valid number';
-      ret = false;
-    }
-    else
-      phoneNoError = null;
-
-    RegExp nameRxExp = new RegExp(
-      r"^[a-zA-Z]+\s{0,1}[a-zA-Z]*$",
-      caseSensitive: false,
-      multiLine: false,
-    );
-    if(!nameRxExp.hasMatch(fullNameController.text)){
-      fullNameError = "Please enter a valid name";
-      ret = false;
-    }
-    else
-      fullNameError = null;
-
-    RegExp emailRxExp = new RegExp(
-      r"^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$",
-      caseSensitive: false,
-      multiLine: false,
-    );
-    if(!emailRxExp.hasMatch(emailController.text)){
-      emailError = "Please enter a valid email";
-      ret = false;
-    }
-    else
-      emailError = null;
-
-    if(passwordController.text.length == 0){
-      passwordError = "Please enter a valid password";
-      ret = false;
-    }
-    else
-      passwordError = null;
-
-    setState(() {
-    });
-    return ret;
   }
 
   void showOTPDialog(SignUpResponse signUpResponse){

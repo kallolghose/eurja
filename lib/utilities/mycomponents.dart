@@ -1,7 +1,10 @@
+import 'package:eurja/models/profile/loginmodels.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'package:eurja/constants/app_constants.dart' as constants;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class MyAppBar extends AppBar{
   MyAppBar({Key key, this.myTitle, this.context}) : super(key:key,
@@ -39,12 +42,47 @@ class AppUtilities{
   String getFormattedDate(DateTime date, String formatStr){
     var formatter = DateFormat(formatStr);
     String formatted = formatter.format(date);
+    //String formatted = date.parse(formattedString);
     return formatted;
   }
 
-  String getFormattedTime(BuildContext context, TimeOfDay time){
+  DateTime getDateTime(String date, String formatStr){
+    var formatter = DateFormat(formatStr);
+    DateTime dateTime = formatter.parse(date);
+    return dateTime;
+  }
 
+  String getFormattedTime(BuildContext context, TimeOfDay time){
     return time.format(context);
+  }
+
+  void saveLoginInformation(LoginResponse loginResponse) async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString("_loginData", json.encode(loginResponse.data.toJson()));
+    prefs.setString("_userData", json.encode(loginResponse.data.userAdditionalInfo.toJson()));
+    prefs.setString("_loginToken", json.encode(loginResponse.data.token.toJson()));
+  }
+
+  Future<LoginResponse> restoreLoginInformation() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String _loginData = prefs.get("_loginData");
+    String _loginToken = prefs.get("_loginToken");
+    String _userData = prefs.get("_userData");
+    if(_loginData !=null && _loginToken!=null) {
+      LoginData loginData = LoginData.fromJson(json.decode(_loginData));
+      Token tokenData = Token.fromJson(json.decode(_loginToken));
+      UserAdditionalInfo userInfo;
+      if(_userData!=null)
+        userInfo = UserAdditionalInfo.fromJson(json.decode(_userData));
+      loginData.token = tokenData;
+      loginData.userAdditionalInfo = userInfo;
+      LoginResponse loginResponse = new LoginResponse();
+      loginResponse.data = loginData;
+      return loginResponse;
+    }
+    else{
+      throw("No User Logged In");
+    }
   }
 
 }

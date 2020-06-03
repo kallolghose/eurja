@@ -26,6 +26,7 @@ class _BookingPage extends State<BookingPage>{
   TextEditingController fullNameController, phoneNumberController, emailController,
       dateController, timeController;
   AppUtilities _appUtilities = new AppUtilities();
+  GlobalKey<FormState> bookingKey = new GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -47,13 +48,13 @@ class _BookingPage extends State<BookingPage>{
 
     StationData stationData = chargerDetails['stationData'];
     int index = chargerDetails['index'];
-    ChargerData chargerData = stationData.chargers[index];
+    ChargerData chargerData = stationData?.chargers[index];
 
-    type = chargerData.type;
-    power = chargerData.power.toString() + " kW " + chargerData.current.toUpperCase();
-    address = stationData.address + ", " + stationData.city + ", " + stationData.state;
-    available = (chargerData.status == "Y") ? "Available" : "Not Available";
-    availableTextColor = (chargerData.status == "Y") ? Color.fromRGBO(20, 140, 32, 1.0) : Colors.red;
+    type = chargerData?.type;
+    power = chargerData?.power.toString() + " kW " + chargerData?.current?.toUpperCase();
+    address = stationData?.address + ", " + stationData?.city + ", " + stationData?.state;
+    available = (chargerData?.status == "Y") ? "Available" : "Not Available";
+    availableTextColor = (chargerData?.status == "Y") ? Color.fromRGBO(20, 140, 32, 1.0) : Colors.red;
     ratePerHr = chargerData!=null && chargerData.price!=null ? chargerData.price.ratePerHr : 0.0;
     ratePerMin = chargerData!=null && chargerData.price!=null ? chargerData.price.ratePerMin : 0.0;
 
@@ -104,155 +105,173 @@ class _BookingPage extends State<BookingPage>{
               ),
               Padding(
                 padding: EdgeInsets.all(10),
-                child: Column(
-                  mainAxisSize: MainAxisSize.max,
-                  children: <Widget>[
-                    Row(
-                      children: <Widget>[
-                        Text("Booking Created For")
-                      ],
-                    ),
-                    SizedBox(height: 10,),
-                    Container(
-                      height: 50,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                child: Form(
+                  key: bookingKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.max,
+                    children: <Widget>[
+                      Row(
                         children: <Widget>[
-                          Icon(Icons.supervised_user_circle, color: Colors.blue,),
-                          SizedBox(width: 10,),
-                          Expanded(
-                            child: TextFormField(
-                              controller: fullNameController,
-                              decoration: InputDecoration(
-                                  hintText: "Full Name",
-                                  isDense: true
-                              ),
-                            ),
-                          )
+                          Text("Booking Created For")
                         ],
                       ),
-                    ),
-                    Container(
-                      height: 50,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Icon(Icons.phone, color: Colors.blue),
-                          SizedBox(width: 10,),
-                          Expanded(
-                            child: TextFormField(
-                              controller: phoneNumberController,
-                              decoration: InputDecoration(
-                                  hintText: "Phone Number",
-                                  isDense: true
+                      SizedBox(height: 10,),
+                      Container(
+                        height: 50,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Icon(Icons.supervised_user_circle, color: Colors.blue,),
+                            SizedBox(width: 10,),
+                            Expanded(
+                              child: TextFormField(
+                                controller: fullNameController,
+                                decoration: InputDecoration(
+                                    hintText: "Full Name",
+                                    isDense: true
+                                ),
+                                validator: (value) {
+                                  if(value == null || value.isEmpty)
+                                    return "Full Name Required";
+                                  return null;
+                                },
                               ),
-                              keyboardType: TextInputType.phone,
-                            ),
-                          )
-                        ],
+                            )
+                          ],
+                        ),
                       ),
-                    ),
-                    Container(
-                      height: 50,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Icon(Icons.mail_outline,
-                              color: Colors.blue
-                          ),
-                          SizedBox(width: 10,),
-                          Expanded(
-                            child: TextFormField(
-                              controller: emailController,
-                              decoration: InputDecoration(
-                                  hintText: "Email",
-                                  isDense: true
+                      Container(
+                        height: 50,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Icon(Icons.phone, color: Colors.blue),
+                            SizedBox(width: 10,),
+                            Expanded(
+                              child: TextFormField(
+                                controller: phoneNumberController,
+                                decoration: InputDecoration(
+                                    hintText: "Phone Number",
+                                    isDense: true
+                                ),
+                                keyboardType: TextInputType.phone,
+                                validator: (value) {
+                                  if(value == null || value.isEmpty)
+                                    return "Phone Number Required";
+                                  return null;
+                                },
                               ),
-                            ),
-                          )
-                        ],
+                            )
+                          ],
+                        ),
                       ),
-                    ),
-                    Container(
-                      height: 50,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Expanded(
-                            child: Row(
-                              mainAxisSize: MainAxisSize.max,
-                              children: <Widget>[
-                                Text("Date : "),
-                                Expanded(
-                                  child: TextFormField(
-                                    enabled: false,
-                                    controller: dateController,
-                                    focusNode: FocusNode(),
-                                    enableInteractiveSelection: false,
-                                    decoration: InputDecoration(
-                                      isDense: true,
+                      Container(
+                        height: 50,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            Icon(Icons.mail_outline,
+                                color: Colors.blue
+                            ),
+                            SizedBox(width: 10,),
+                            Expanded(
+                              child: TextFormField(
+                                controller: emailController,
+                                decoration: InputDecoration(
+                                    hintText: "Email",
+                                    isDense: true
+                                ),
+                                validator: (value) {
+                                  if(value == null || value.isEmpty)
+                                    return "Email Required";
+                                  return null;
+                                },
+                              ),
+                            )
+                          ],
+                        ),
+                      ),
+                      Container(
+                        height: 50,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            Expanded(
+                              child: Row(
+                                mainAxisSize: MainAxisSize.max,
+                                children: <Widget>[
+                                  Text("Date : "),
+                                  Expanded(
+                                    child: TextFormField(
+                                      enabled: false,
+                                      controller: dateController,
+                                      focusNode: FocusNode(),
+                                      enableInteractiveSelection: false,
+                                      decoration: InputDecoration(
+                                        isDense: true,
+                                      ),
+                                      style: TextStyle(fontSize: 14),
+                                      textAlign: TextAlign.center,
                                     ),
-                                    style: TextStyle(fontSize: 14),
-                                    textAlign: TextAlign.center,
                                   ),
-                                ),
-                                GestureDetector(
-                                  onTap: _pickupDate,
-                                  child: Icon(Icons.date_range,
-                                    color: Colors.blue,
-                                  ),
-                                ),
-
-                              ],
-                            ),
-                          ),
-                          SizedBox(width: 5,),
-                          Expanded(
-                            child: Row(
-                              mainAxisSize: MainAxisSize.max,
-                              children: <Widget>[
-                                Text("Time : "),
-                                Expanded(
-                                  child: TextFormField(
-                                    enabled: false,
-                                    controller: timeController,
-                                    focusNode: FocusNode(),
-                                    enableInteractiveSelection: false,
-                                    decoration: InputDecoration(
-                                      isDense: true,
+                                  GestureDetector(
+                                    onTap: _pickupDate,
+                                    child: Icon(Icons.date_range,
+                                      color: Colors.blue,
                                     ),
-                                    style: TextStyle(fontSize: 14),
-                                    textAlign: TextAlign.center,
                                   ),
-                                ),
-                                GestureDetector(
-                                  onTap: _pickUpTime,
-                                  child: Icon(Icons.access_time,
-                                    color: Colors.blue,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 10,),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 40,
-                      child: MaterialButton(
-                        onPressed: (){},
-                        color: Colors.blue,
-                        textColor: Colors.white,
-                        child: Text("Create Booking"),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4.0)
-                        )
-                      ),
-                    )
 
-                  ],
+                                ],
+                              ),
+                            ),
+                            SizedBox(width: 5,),
+                            Expanded(
+                              child: Row(
+                                mainAxisSize: MainAxisSize.max,
+                                children: <Widget>[
+                                  Text("Time : "),
+                                  Expanded(
+                                    child: TextFormField(
+                                      enabled: false,
+                                      controller: timeController,
+                                      focusNode: FocusNode(),
+                                      enableInteractiveSelection: false,
+                                      decoration: InputDecoration(
+                                        isDense: true,
+                                      ),
+                                      style: TextStyle(fontSize: 14),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: _pickUpTime,
+                                    child: Icon(Icons.access_time,
+                                      color: Colors.blue,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 10,),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 40,
+                        child: MaterialButton(
+                            onPressed: (){},
+                            color: Colors.blue,
+                            textColor: Colors.white,
+                            child: Text("Create Booking"),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4.0)
+                            )
+                        ),
+                      )
+
+                    ],
+                  ),
                 ),
               )
             ],
